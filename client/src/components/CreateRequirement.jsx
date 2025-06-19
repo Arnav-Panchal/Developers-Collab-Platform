@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
 
 const ProjectPost = () => {
     const [title, setTitle] = useState('');
@@ -43,7 +44,8 @@ const ProjectPost = () => {
         };
 
         try {
-            const res = await fetch('/api/post/create', {
+            const apiUrl = resolveProxyUrl('/api/post/create');
+            const res = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -5,6 +5,7 @@ import { Users } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import ProjectCard from './ProjectCard';
 import { useSelector } from "react-redux"
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
 
 interface Project {
   id: string;
@@ -36,7 +37,8 @@ const TeammateRecommendations: React.FC = () => {
   useEffect(() => {
     const fetchUserPosts = async () => {
       try {
-        const res = await axios.get(`/flask/posts/user/${userId}`);
+        const apiUrl = resolveProxyUrl(`/flask/posts/user/${userId}`);
+        const res = await axios.get(apiUrl);
         if (Array.isArray(res.data)) {
           console.log("Fetched Posts:", res.data);
           setPosts(res.data);
@@ -69,7 +71,8 @@ const TeammateRecommendations: React.FC = () => {
         await Promise.all(
           posts.map(async (post) => {
             try {
-              const res = await axios.get(`/flask/users/recommendations/post/${post.id}`);
+              const apiUrl1 = resolveProxyUrl(`/flask/users/recommendations/post/${post.id}`);
+              const res = await axios.get(apiUrl1);
               if (Array.isArray(res.data)) {
                 console.log(`Recommendations for Post (${post.id}):`, res.data);
                 results[post.id] = res.data;

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import io from 'socket.io-client';
-
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
 
 
 
@@ -57,9 +57,16 @@ const ChatRoom = ({ room, currentUser, onBack }) => {
     try {
       setError(null);
 
+      
+      const apiUrl = resolveProxyUrl(`/api/chat/access/${roomId}/${currentUser.id}`);
+      const apiUrl1 = resolveProxyUrl(`/api/chat/messages/${roomId}`);
+      const apiUrl2 = resolveProxyUrl(`/api/chat/members/${roomId}`);
+      
+
+
       // Check access to the chat room
       try {
-        const accessResponse = await axios.get(`/api/chat/access/${roomId}/${currentUser._id}`);
+        const accessResponse = await axios.get(apiUrl);
         console.log('Access check response:', accessResponse.data);
         
         if (!accessResponse.data.hasAccess) {
@@ -72,7 +79,7 @@ const ChatRoom = ({ room, currentUser, onBack }) => {
 
       // Fetch messages
       try {
-        const messagesResponse = await axios.get(`/api/chat/messages/${roomId}`);
+        const messagesResponse = await axios.get(apiUrl1);
         console.log('Messages fetched:', messagesResponse.data.length);
         setMessages(Array.isArray(messagesResponse.data) ? messagesResponse.data : []);
       } catch (msgError) {
@@ -82,7 +89,7 @@ const ChatRoom = ({ room, currentUser, onBack }) => {
 
       // Fetch members
       try {
-        const membersResponse = await axios.get(`/api/chat/members/${roomId}`);
+        const membersResponse = await axios.get(apiUrl2);
         console.log('Members fetched:', membersResponse.data.length);
         setMembers(Array.isArray(membersResponse.data) ? membersResponse.data : []);
       } catch (memberError) {
@@ -166,7 +173,10 @@ const ChatRoom = ({ room, currentUser, onBack }) => {
 
       console.log('Message data:', messageData);
 
-      const response = await axios.post('/api/chat/send', messageData);
+
+      const apiUrl3 = resolveProxyUrl('/api/chat/send');
+
+      const response = await axios.post(apiUrl3, messageData);
       console.log('Message sent response:', response.data);
 
       const newMsg = response.data.data || response.data;

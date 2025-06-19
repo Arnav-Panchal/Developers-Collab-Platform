@@ -2,6 +2,7 @@ import { Alert, Button, Label, Spinner, TextInput } from 'flowbite-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 // import OAuth from '../components/OAuth';
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({});
@@ -21,7 +22,8 @@ export default function SignUp() {
     try {
       setLoading(true);
       setErrorMessage(null);
-      const res = await fetch('/api/auth/signup', {
+      const apiUrl = resolveProxyUrl('/api/auth/signup');
+      const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

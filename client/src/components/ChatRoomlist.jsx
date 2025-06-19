@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { resolveProxyUrl } from '@/utils/resolveProxyUrl';
 
 const ChatRoomList = ({ currentUser, onSelectRoom }) => {
   const [chatRooms, setChatRooms] = useState([]);
@@ -11,7 +12,7 @@ const ChatRoomList = ({ currentUser, onSelectRoom }) => {
     if (currentUser && currentUser.id) {
       fetchChatRooms();
     } else {
-      console.warn('currentUser or currentUser._id is missing:', currentUser);
+      console.warn('currentUser or currentUser.id is missing:', currentUser);
       setChatRooms([]);
       setLoading(false);
       setError('User information not available');
@@ -19,61 +20,57 @@ const ChatRoomList = ({ currentUser, onSelectRoom }) => {
   }, [currentUser]);
 
   const fetchChatRooms = async () => {
-  console.log("Fetching chat rooms for user:", currentUser?.id);
-  try {
-    setLoading(true);
-    setError(null);
+    console.log("Fetching chat rooms for user:", currentUser?.id);
+    try {
+      setLoading(true);
+      setError(null);
 
-    const endpoints = [
-      `/api/chat/rooms/owner/${currentUser.id}`,  // Rooms user owns
-      `/api/chat/rooms/member/${currentUser.id}`, // Rooms user is member of
-      `/api/chat/rooms/user/${currentUser.id}`,   // Alternative endpoint
-      `/api/chat/rooms`                           // All rooms (can filter client-side)
-    ];
+      const endpoints = [
+        `/api/chat/rooms/owner/${currentUser.id}`,
+        `/api/chat/rooms/member/${currentUser.id}`,
+        `/api/chat/rooms/user/${currentUser.id}`,
+        `/api/chat/rooms`
+      ];
 
-    // Fetch all endpoints in parallel using Promise.allSettled to get all results regardless of failures
-    const results = await Promise.allSettled(
-      endpoints.map(endpoint => axios.get(endpoint))
-    );
+      const results = await Promise.allSettled(
+        endpoints.map(endpoint =>
+          axios.get(resolveProxyUrl(endpoint))
+        )
+      );
 
-    // Extract data from successful requests
-    let allRooms = [];
-    results.forEach(result => {
-      if (result.status === 'fulfilled' && Array.isArray(result.value.data)) {
-        allRooms = allRooms.concat(result.value.data);
+      let allRooms = [];
+      results.forEach(result => {
+        if (result.status === 'fulfilled' && Array.isArray(result.value.data)) {
+          allRooms = allRooms.concat(result.value.data);
+        }
+      });
+
+      if (allRooms.length === 0) {
+        throw new Error('No rooms fetched from any endpoint');
       }
-    });
 
-    if (allRooms.length === 0) {
-      throw new Error('No rooms fetched from any endpoint');
+      const uniqueRooms = allRooms.filter(
+        (room, index, self) =>
+          index === self.findIndex(r => r._id === room._id)
+      );
+
+      const userRooms = uniqueRooms.filter(room =>
+        room.ownerId === currentUser.id ||
+        (room.members && room.members.some(member =>
+          member.userId === currentUser.id || member._id === currentUser.id
+        ))
+      );
+
+      console.log(`Fetched and combined rooms: ${userRooms.length}`);
+      setChatRooms(userRooms);
+    } catch (error) {
+      console.error('Error fetching chat rooms:', error);
+      setError(`Failed to load chat rooms: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Remove duplicate rooms by _id
-    const uniqueRooms = allRooms.filter(
-      (room, index, self) => index === self.findIndex(r => r._id === room._id)
-    );
-
-    // Filter rooms where user is owner or member
-    const userRooms = uniqueRooms.filter(room =>
-      room.ownerId === currentUser.id ||
-      (room.members && room.members.some(member =>
-        member.userId === currentUser.id || member._id === currentUser.id
-      ))
-    );
-
-    console.log(`Fetched and combined rooms: ${userRooms.length}`);
-    setChatRooms(userRooms);
-
-  } catch (error) {
-    console.error('Error fetching chat rooms:', error);
-    setError(`Failed to load chat rooms: ${error.message}`);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-  // Filter rooms based on active tab
   const getFilteredRooms = () => {
     switch (activeTab) {
       case 'owned':
@@ -87,11 +84,9 @@ const ChatRoomList = ({ currentUser, onSelectRoom }) => {
 
   const formatLastActivity = (date) => {
     if (!date) return 'No activity';
-
     const now = new Date();
     const lastActivity = new Date(date);
     const diffInMinutes = Math.floor((now - lastActivity) / (1000 * 60));
-
     if (diffInMinutes < 1) return 'Just now';
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
@@ -99,61 +94,20 @@ const ChatRoomList = ({ currentUser, onSelectRoom }) => {
   };
 
   const handleRoomClick = (room) => {
-    console.log('Room clicked:', room); // Debug log
-    // Ensure room has required properties
     if (!room._id && !room.postId) {
       console.error('Room missing required ID:', room);
       alert('Invalid room data');
       return;
     }
-    
-    // Standardize room object
+
     const standardizedRoom = {
       ...room,
       postId: room.postId || room._id,
       title: room.title || room.name || 'Untitled Room'
     };
-    
+
     onSelectRoom(standardizedRoom);
   };
-
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded mb-6"></div>
-          <div className="flex space-x-4 mb-6">
-            <div className="h-10 w-24 bg-gray-200 rounded"></div>
-            <div className="h-10 w-24 bg-gray-200 rounded"></div>
-            <div className="h-10 w-24 bg-gray-200 rounded"></div>
-          </div>
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-20 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="text-center py-12">
-          <div className="text-red-400 text-6xl mb-4">⚠️</div>
-          <h3 className="text-xl font-semibold text-red-600 mb-2">Error Loading Rooms</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={fetchChatRooms}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   const filteredRooms = getFilteredRooms();
   const ownedRoomsCount = chatRooms.filter(room => room.ownerId === currentUser?.id).length;
@@ -171,7 +125,6 @@ const ChatRoomList = ({ currentUser, onSelectRoom }) => {
         </button>
       </div>
 
-      {/* Tab Navigation */}
       <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
         <button
           onClick={() => setActiveTab('all')}
@@ -205,7 +158,6 @@ const ChatRoomList = ({ currentUser, onSelectRoom }) => {
         </button>
       </div>
 
-      {/* Debug Information */}
       <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
         <p className="text-blue-800">
           <strong>Debug:</strong> User ID: {currentUser?.id} | 
@@ -215,7 +167,6 @@ const ChatRoomList = ({ currentUser, onSelectRoom }) => {
         </p>
       </div>
 
-      {/* Chat Rooms List */}
       {filteredRooms.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">💬</div>
@@ -235,14 +186,12 @@ const ChatRoomList = ({ currentUser, onSelectRoom }) => {
               : 'Create or join a project to start chatting.'
             }
           </p>
-          {chatRooms.length === 0 && (
-            <button
-              onClick={fetchChatRooms}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-            >
-              Reload Rooms
-            </button>
-          )}
+          <button
+            onClick={fetchChatRooms}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            Reload Rooms
+          </button>
         </div>
       ) : (
         <div className="space-y-4">

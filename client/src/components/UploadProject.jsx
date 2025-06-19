@@ -2,6 +2,7 @@ import  { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSelector} from 'react-redux';
 import { result} from './callback'; // Assuming these functions are in the githubAuth file
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
 
 const UploadProject = () => {
   const [repos, setRepos] = useState([]);
@@ -43,7 +44,8 @@ const UploadProject = () => {
 
         console.log("running fetch")
         // Send selected repository data to your backend
-        await axios.post('/api/auth/upload-project', {
+        const apiUrl = resolveProxyUrl('/api/auth/upload-project');
+        await axios.post(apiUrl, {
           email: currentUser.email,
           repository: selectedRepoData,
         });

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice';
 import { Spinner, Button, TextInput } from 'flowbite-react'; // You can continue using Spinner from Flowbite if needed
 import GitHubOAuth from '../components/GitHubOAuth';
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
 
 
 export default function Login() {
@@ -24,7 +25,10 @@ export default function Login() {
     try {
       dispatch(signInStart());
 
-      const res = await fetch('/api/auth/Login', {
+      
+  const apiUrl = resolveProxyUrl('/api/auth/Login');
+
+      const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
