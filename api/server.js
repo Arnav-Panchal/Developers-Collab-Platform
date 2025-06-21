@@ -27,7 +27,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:5173', 'https://developers-collab-platform-1.onrender.com'],
+    origin: ['http://localhost:5173', 'https://developers-collab-platform.vercel.app'],
     credentials: true,
   },
 });
@@ -40,9 +40,10 @@ const __dirname = path.dirname(__filename);
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://developers-collab-platform-1.onrender.com'],
+  origin: ['http://localhost:5173', 'https://developers-collab-platform.vercel.app'],
   credentials: true,
 }));
+app.options('*', cors());
 app.use(session({
   secret: process.env.JWT_SECRET,
   resave: false,

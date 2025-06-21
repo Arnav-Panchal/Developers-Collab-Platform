@@ -1,6 +1,8 @@
 import  { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSelector } from "react-redux"
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
+
 
 function ProjectRecommendations() {
     const { currentUser } = useSelector((state) => state.user)
@@ -9,12 +11,15 @@ function ProjectRecommendations() {
     const [error, setError] = useState(null);
     const userId = currentUser.id;
     console.log(currentUser.username);
+    const flaskUrl = resolveProxyUrl(`/flask/projects/recommendations/${userId}`);
+
+
 
     useEffect(() => {
         console.log(currentUser.id)
         if (userId) {
             setLoading(true);
-            axios.get(`/flask/projects/recommendations/${userId}`)
+            axios.get(flaskUrl)
             .then(res => {
                 setRecommendations(res.data);
                 setLoading(false);

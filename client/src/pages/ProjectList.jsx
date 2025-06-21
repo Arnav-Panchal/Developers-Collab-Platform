@@ -4,6 +4,8 @@ import ProjectCard from './ProjectCard';
 import { Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSelector } from 'react-redux';
 
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
+
 const ProjectList = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,6 +13,8 @@ const ProjectList = () => {
   const [totalProjects, setTotalProjects] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const { currentUser } = useSelector((state) => state.user);
+  
+
 
   const [filters, setFilters] = useState({
     searchTerm: '',
@@ -36,7 +40,9 @@ const ProjectList = () => {
           ...(filters.skill && { skill: filters.skill }),
         });
 
-        const response = await axios.get(`/api/post/getPosts?${queryParams}`);
+        const apiUrl = resolveProxyUrl(`/api/post/getPosts?${queryParams}`);
+
+        const response = await axios.get(apiUrl);
 
         
 

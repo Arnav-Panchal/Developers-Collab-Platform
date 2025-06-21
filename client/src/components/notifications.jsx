@@ -4,6 +4,7 @@ import { Avatar } from 'flowbite-react';
 import { Check, X, Clock, MessageCircle } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
 
 export default function NotificationComponent() {
   const { currentUser } = useSelector((state) => state.user);
@@ -14,9 +15,14 @@ export default function NotificationComponent() {
     fetchNotifications();
   }, [currentUser.id]);
 
+  
+  const apiUrl = resolveProxyUrl(`/api/notifications/${currentUser.id}`);
+  const apiUrl2 = resolveProxyUrl(`/api/notifications/accept/${notification._id}`);
+  const apiUrl3 = resolveProxyUrl(`/api/notifications/reject/${notification._id}`);
+
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get(`/api/notifications/${currentUser.id}`);
+      const response = await axios.get(apiUrl);
       setNotifications(response.data);
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -29,7 +35,7 @@ export default function NotificationComponent() {
   const handleAcceptRequest = async (notification) => {
     try {
       // Accept the join request
-      await axios.put(`/api/notifications/accept/${notification._id}`, {
+      await axios.put(apiUrl2, {
         postId: notification.postId,
         userId: notification.senderId
       });
@@ -52,7 +58,7 @@ export default function NotificationComponent() {
 
   const handleRejectRequest = async (notification) => {
     try {
-      await axios.put(`/api/notifications/reject/${notification._id}`);
+      await axios.put(apiUrl3);
 
       // Update local state
       setNotifications(prev => 

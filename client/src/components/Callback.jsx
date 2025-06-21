@@ -5,6 +5,7 @@ import { useEffect } from 'react';
  import { signInSuccess } from '../redux/user/userSlice';
  import { useDispatch } from 'react-redux';
  import axios from "axios"
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
 
 const Callback = () => {
     const dispatch = useDispatch();
@@ -23,9 +24,10 @@ const Callback = () => {
         const user=u.userData;
         // const repo=u.repoData;
       
+        const apiUrl = resolveProxyUrl('/api/auth/github');
+
         
-        
-        const  response =axios.post('/api/auth/github',{
+        const  response =axios.post(apiUrl,{
             email:user.email,
             userdata:user
           })

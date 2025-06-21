@@ -22,6 +22,8 @@ import {
 import { useDispatch } from 'react-redux';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
+
 
 export default function DashProfile() {
   const { currentUser, error, loading } = useSelector((state) => state.user);
@@ -110,7 +112,8 @@ export default function DashProfile() {
       //   bio:formData.Bio,
       //   institute:formData.workplace}
       //   console.log(currentUser);
-      const res = await fetch('/api/user/update/$(current)', {
+      const apiUrl = resolveProxyUrl('/api/user/update/$(currentUser._id)');
+      const res = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -136,7 +139,8 @@ export default function DashProfile() {
     setShowModal(false);
     try {
       dispatch(deleteUserStart());
-      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+      const apiUrl2 = resolveProxyUrl(`/api/user/delete/${currentUser._id}`);
+      const res = await fetch(apiUrl2, {
         method: 'DELETE',
       });
       const data = await res.json();
@@ -152,7 +156,8 @@ export default function DashProfile() {
 
   const handleSignout = async () => {
     try {
-      const res = await fetch('/api/user/signout', {
+      const apiUrl3 = resolveProxyUrl('/api/user/signout');
+      const res = await fetch(apiUrl3, {
         method: 'POST',
       });
       const data = await res.json();

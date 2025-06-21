@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
 
 export default function DisplayProjects() {
   const { currentUser } = useSelector((state) => state.user);
@@ -13,7 +14,8 @@ export default function DisplayProjects() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await axios.get(`/api/projects/user?email=${currentUser.email}`);
+        const apiUrl = resolveProxyUrl(`/api/projects/user?email=${currentUser.email}`);
+        const res = await axios.get(apiUrl);
         setProjects(res.data);
       } catch (err) {
         setError("Failed to fetch projects.");
