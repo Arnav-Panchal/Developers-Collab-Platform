@@ -20,17 +20,6 @@ const Chat = () => {
     setSelectedRoom(null);
   };
 
-//   // Show loading if no current user
-//   if (!currentUser || !currentUser._id) {
-//     return (
-//       <div className="h-screen flex items-center justify-center">
-//         <div className="text-center">
-//           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-//           <p className="text-gray-600">Loading user data...</p>
-//         </div>
-//       </div>
-//     );
-//   }
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">

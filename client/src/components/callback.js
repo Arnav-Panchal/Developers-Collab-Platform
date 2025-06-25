@@ -1,4 +1,7 @@
-import axios from "axios"
+import axios from "axios";
+import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
+
+
 
 let result=null;
 
@@ -6,8 +9,10 @@ async function getAccessToken() {
   const code = new URLSearchParams(window.location.search).get('code');
   if (!code) return;
 
+  const apiUrl = resolveProxyUrl('/api/github/exchange-token')
+
   try {
-    const res = await fetch('/api/github/exchange-token', {
+    const res = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -112,7 +112,7 @@ const ChatRoom = ({ room, currentUser, onBack }) => {
 
     try {
       // Use environment variable for socket URL or default to localhost
-      const socketUrl =  'http://localhost:5000';
+      const socketUrl =  'https://developers-collab-platform-1.onrender.com';
       socketRef.current = io(socketUrl);
 
       socketRef.current.emit('join_room', roomId);
@@ -518,7 +518,7 @@ ChatRoom.propTypes = {
     members: PropTypes.array,
   }).isRequired,
   currentUser: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
     username: PropTypes.string.isRequired,
     profilePic: PropTypes.string,
   }).isRequired,

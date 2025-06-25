@@ -26,7 +26,7 @@ export default function Login() {
       dispatch(signInStart());
 
       
-  const apiUrl = resolveProxyUrl('/api/auth/Login');
+  const apiUrl = resolveProxyUrl('/api/auth/login');
 
       const res = await fetch(apiUrl, {
         method: 'POST',
