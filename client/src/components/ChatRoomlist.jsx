@@ -28,8 +28,8 @@ const ChatRoomList = ({ currentUser, onSelectRoom }) => {
       const endpoints = [
         `/api/chat/rooms/owner/${currentUser.id}`,
         `/api/chat/rooms/member/${currentUser.id}`,
-        `/api/chat/rooms/user/${currentUser.id}`,
-        `/api/chat/rooms`
+        // `/api/chat/rooms/user/${currentUser.id}`,
+        // `/api/chat/rooms`
       ];
 
       const results = await Promise.allSettled(

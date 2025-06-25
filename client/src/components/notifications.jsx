@@ -17,8 +17,6 @@ export default function NotificationComponent() {
 
   
   const apiUrl = resolveProxyUrl(`/api/notifications/${currentUser.id}`);
-  const apiUrl2 = resolveProxyUrl(`/api/notifications/accept/${notification._id}`);
-  const apiUrl3 = resolveProxyUrl(`/api/notifications/reject/${notification._id}`);
 
   const fetchNotifications = async () => {
     try {
@@ -33,6 +31,9 @@ export default function NotificationComponent() {
   };
 
   const handleAcceptRequest = async (notification) => {
+    
+    const apiUrl2 = resolveProxyUrl(`/api/notifications/accept/${notification._id}`);
+    
     try {
       // Accept the join request
       await axios.put(apiUrl2, {
@@ -57,6 +58,10 @@ export default function NotificationComponent() {
   };
 
   const handleRejectRequest = async (notification) => {
+
+    
+  const apiUrl3 = resolveProxyUrl(`/api/notifications/reject/${notification._id}`);
+  
     try {
       await axios.put(apiUrl3);
 

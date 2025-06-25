@@ -26,7 +26,9 @@ export default function Login() {
       dispatch(signInStart());
 
       
-  // const apiUrl = resolveProxyUrl('/api/auth/Login');
+
+  const apiUrl = resolveProxyUrl('/api/auth/login');
+
 
       const res = await fetch('https://developers-collab-platform-1.onrender.com/api/github/exchange-token', {
         method: 'POST',

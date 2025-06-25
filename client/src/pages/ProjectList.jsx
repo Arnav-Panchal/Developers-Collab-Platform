@@ -50,7 +50,8 @@ const ProjectList = () => {
           // Ensure each project has a date property, even if it's null or undefined
           const validatedProjects = response.data.posts.map((project) => ({
             ...project,
-            date: project.date || null, // Provide a default value if date is missing
+            date: project.date || null,
+            ownerId: typeof project.ownerId === 'object' ? project.ownerId._id : project.ownerId || '',
           }));
           setProjects(validatedProjects);
           setTotalProjects(response.data.totalPosts || 0);
