@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice';
 import { Spinner, Button, TextInput } from 'flowbite-react'; // You can continue using Spinner from Flowbite if needed
 import GitHubOAuth from '../components/GitHubOAuth';
-import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
+// import  {resolveProxyUrl} from '../utils/resolveProxyUrl';
 
 
 export default function Login() {
@@ -26,9 +26,11 @@ export default function Login() {
       dispatch(signInStart());
 
       
+
   const apiUrl = resolveProxyUrl('/api/auth/login');
 
-      const res = await fetch(apiUrl, {
+
+      const res = await fetch('https://developers-collab-platform-1.onrender.com/api/github/exchange-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
