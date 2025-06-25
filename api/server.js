@@ -44,7 +44,14 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
-app.options('*', cors());
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', 'https://developers-collab-platform.vercel.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(200);
+});
+
 app.use(session({
   secret: process.env.JWT_SECRET,
   resave: false,
