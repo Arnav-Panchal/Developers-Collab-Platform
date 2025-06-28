@@ -41,6 +41,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@reduxjs/toolkit": "^2.2.7",
     "@tanstack/react-query": "^5.67.2",
+    "@vercel/analytics": "^1.5.0",
     "api": "file:../api",
     "axios": "^1.8.3",
     "class-variance-authority": "^0.7.1",

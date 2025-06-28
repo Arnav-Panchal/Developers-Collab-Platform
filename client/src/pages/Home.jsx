@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom"
 import { useSelector } from "react-redux"
+import { Analytics } from "@vercel/analytics/react"
 
 export default function HomePage() {
   const { currentUser } = useSelector((state) => state.user)
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <Analytics />
       <main className="flex-1">
         <section className="w-full py-20 md:py-32 lg:py-44 bg-gradient-to-r from-blue-700 via-black to-blue-500 text-white">
           <div className="container mx-auto px-4 md:px-6">
