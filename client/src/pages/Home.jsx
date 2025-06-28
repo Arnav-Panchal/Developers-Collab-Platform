@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import { useSelector } from "react-redux"
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/react"
 
 export default function HomePage() {
   const { currentUser } = useSelector((state) => state.user)
