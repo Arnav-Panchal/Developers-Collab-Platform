@@ -1,110 +1,138 @@
 // server.js
-import express from 'express';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import path from 'path';
-import cookieParser from 'cookie-parser';
-import session from 'express-session';
-import passport from 'passport';
-import { fileURLToPath } from 'url';
-import { Server } from 'socket.io';
-import http from 'http';
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import cors from "cors";
+import path from "path";
+import cookieParser from "cookie-parser";
+import session from "express-session";
+import passport from "passport";
+import { fileURLToPath } from "url";
+import { Server } from "socket.io";
+import http from "http";
 
 // Routes
-import githubAuthRoutes from './routes/github.routes.js';
-import userRoutes from './routes/user.route.js';
-import authRoutes from './routes/auth.route.js';
-import projectsdisplay from './routes/projectRoutes.js';
-import projectRoutes from './routes/post.route.js';
-// import messageRoutes from './routes/message.route.js';
-import notificationRoutes from './routes/notification.js';
-import chatRoutes from './routes/chatroom.js';
+import githubAuthRoutes from "./routes/github.routes.js";
+import userRoutes from "./routes/user.route.js";
+import authRoutes from "./routes/auth.route.js";
+import projectsdisplay from "./routes/projectRoutes.js";
+import projectRoutes from "./routes/post.route.js";
+import notificationRoutes from "./routes/notification.js";
+import chatRoutes from "./routes/chatroom.js";
 
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+
+// ------------------ Socket.io Config ------------------
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:5173', 'https://www.devcheck.store', 'https://developers-collab-platform.vercel.app'],
+    origin: [
+      "https://www.devcheck.store",
+      "http://localhost:5173",
+      "https://developers-collab-platform.vercel.app",
+    ],
     credentials: true,
   },
 });
 
-// Required for __dirname in ES Modules
+// ------------------ __dirname Fix ------------------
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Middleware
+// ------------------ Middleware ------------------
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-  origin: ['http://localhost:5173', 'https://www.devcheck.store', 'https://developers-collab-platform.vercel.app'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-}));
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', 'https://www.devcheck.store ');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.sendStatus(200);
-});
 
-app.use(session({
-  secret: process.env.JWT_SECRET,
-  resave: false,
-  saveUninitialized: false,
-}));
+// ✅ Correct & Safe CORS setup
+const allowedOrigins = [
+  "https://www.devcheck.store",
+  "http://localhost:5173",
+  "https://developers-collab-platform.vercel.app",
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  })
+);
+
+// ✅ Handle preflight automatically
+app.options("*", cors());
+
+app.use(
+  session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 45000,
-})
-.then(() => console.log("MongoDB connected"))
-.catch((err) => console.error("MongoDB connection error:", err));
+// ------------------ MongoDB Connection ------------------
+mongoose
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+  })
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// Jaccard Similarity Function
+// ------------------ Jaccard Similarity Function ------------------
 const calculateJaccardSimilarity = (setA, setB) => {
-  const intersectionSize = [...setA].filter(x => setB.has(x)).length;
+  const intersectionSize = [...setA].filter((x) => setB.has(x)).length;
   const unionSize = new Set([...setA, ...setB]).size;
   return unionSize === 0 ? 0 : intersectionSize / unionSize;
 };
 
-// Base Route
-app.get('/', (req, res) => {
-  res.send('server working');
+// ------------------ Base Route ------------------
+app.get("/", (req, res) => {
+  res.send("Server running successfully 🚀");
 });
 
-// ---------------------- Recommendations ----------------------
+// ------------------ Recommendation APIs ------------------
 
 // Recommend projects for a user
-app.get('/flask/projects/recommendations/:user_id', async (req, res) => {
+app.get("/flask/projects/recommendations/:user_id", async (req, res) => {
   try {
     const db = mongoose.connection.db;
     const userId = req.params.user_id;
-    if (!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({ error: 'Invalid user ID' });
+    if (!mongoose.Types.ObjectId.isValid(userId))
+      return res.status(400).json({ error: "Invalid user ID" });
 
-    const user = await db.collection('users').findOne({ _id: new mongoose.Types.ObjectId(userId) });
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    const user = await db
+      .collection("users")
+      .findOne({ _id: new mongoose.Types.ObjectId(userId) });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
     const userSkills = new Set(user.skills || []);
-    const userProjectsCursor = db.collection('userProjects').find({ email: user.email });
+    const userProjectsCursor = db
+      .collection("userProjects")
+      .find({ email: user.email });
 
-    await userProjectsCursor.forEach(proj => {
+    await userProjectsCursor.forEach((proj) => {
       if (proj.language) userSkills.add(proj.language);
     });
 
-    const allProjects = await db.collection('posts').find().toArray();
+    const allProjects = await db.collection("posts").find().toArray();
 
-    const recommendations = allProjects.map(proj => {
-      const projectSkills = new Set([...(proj.skills || []), ...(proj.technologies || [])]);
+    const recommendations = allProjects.map((proj) => {
+      const projectSkills = new Set([
+        ...(proj.skills || []),
+        ...(proj.technologies || []),
+      ]);
       const similarity = calculateJaccardSimilarity(userSkills, projectSkills);
       return { projectId: proj._id.toString(), similarity };
     });
@@ -114,17 +142,21 @@ app.get('/flask/projects/recommendations/:user_id', async (req, res) => {
 
     const projectDetails = await Promise.all(
       topFive.map(async ({ projectId }) => {
-        const p = await db.collection('posts').findOne({ _id: new mongoose.Types.ObjectId(projectId) });
-        return p && {
-          id: p._id.toString(),
-          title: p.title,
-          description: p.description,
-          technologies: p.technologies,
-          skills: p.skills,
-          ownerUsername: p.ownerUsername,
-          ownerPic: p.ownerPic,
-          slug: p.slug,
-        };
+        const p = await db
+          .collection("posts")
+          .findOne({ _id: new mongoose.Types.ObjectId(projectId) });
+        return (
+          p && {
+            id: p._id.toString(),
+            title: p.title,
+            description: p.description,
+            technologies: p.technologies,
+            skills: p.skills,
+            ownerUsername: p.ownerUsername,
+            ownerPic: p.ownerPic,
+            slug: p.slug,
+          }
+        );
       })
     );
 
@@ -136,11 +168,14 @@ app.get('/flask/projects/recommendations/:user_id', async (req, res) => {
 });
 
 // Get posts by username
-app.get('/flask/posts/user/:ownerUsername', async (req, res) => {
+app.get("/flask/posts/user/:ownerUsername", async (req, res) => {
   try {
     const db = mongoose.connection.db;
-    const posts = await db.collection('posts').find({ ownerUsername: req.params.ownerUsername }).toArray();
-    const formattedPosts = posts.map(post => ({
+    const posts = await db
+      .collection("posts")
+      .find({ ownerUsername: req.params.ownerUsername })
+      .toArray();
+    const formattedPosts = posts.map((post) => ({
       id: post._id.toString(),
       title: post.title,
       description: post.description,
@@ -155,24 +190,32 @@ app.get('/flask/posts/user/:ownerUsername', async (req, res) => {
 });
 
 // Recommend users for a post
-app.get('/flask/users/recommendations/post/:post_id', async (req, res) => {
+app.get("/flask/users/recommendations/post/:post_id", async (req, res) => {
   try {
     const db = mongoose.connection.db;
     const postId = req.params.post_id;
-    if (!mongoose.Types.ObjectId.isValid(postId)) return res.status(400).json({ error: 'Invalid post ID' });
+    if (!mongoose.Types.ObjectId.isValid(postId))
+      return res.status(400).json({ error: "Invalid post ID" });
 
-    const post = await db.collection('posts').findOne({ _id: new mongoose.Types.ObjectId(postId) });
-    if (!post) return res.status(404).json({ error: 'Post not found' });
+    const post = await db
+      .collection("posts")
+      .findOne({ _id: new mongoose.Types.ObjectId(postId) });
+    if (!post) return res.status(404).json({ error: "Post not found" });
 
-    const postSkills = new Set([...(post.skills || []), ...(post.technologies || [])]);
-    const allUsers = await db.collection('users').find().toArray();
+    const postSkills = new Set([
+      ...(post.skills || []),
+      ...(post.technologies || []),
+    ]);
+    const allUsers = await db.collection("users").find().toArray();
 
     const recommendations = await Promise.all(
-      allUsers.map(async user => {
+      allUsers.map(async (user) => {
         const userSkills = new Set(user.skills || []);
-        const userProjectsCursor = db.collection('userProjects').find({ email: user.email });
+        const userProjectsCursor = db
+          .collection("userProjects")
+          .find({ email: user.email });
 
-        await userProjectsCursor.forEach(proj => {
+        await userProjectsCursor.forEach((proj) => {
           if (proj.language) userSkills.add(proj.language);
         });
 
@@ -186,14 +229,18 @@ app.get('/flask/users/recommendations/post/:post_id', async (req, res) => {
 
     const userDetails = await Promise.all(
       topFive.map(async ({ userId }) => {
-        const user = await db.collection('users').findOne({ _id: new mongoose.Types.ObjectId(userId) });
-        return user && {
-          id: user._id.toString(),
-          username: user.username,
-          profilePicture: user.profilePicture,
-          email: user.email,
-          skills: user.skills,
-        };
+        const user = await db
+          .collection("users")
+          .findOne({ _id: new mongoose.Types.ObjectId(userId) });
+        return (
+          user && {
+            id: user._id.toString(),
+            username: user.username,
+            profilePicture: user.profilePicture,
+            email: user.email,
+            skills: user.skills,
+          }
+        );
       })
     );
 
@@ -204,7 +251,7 @@ app.get('/flask/users/recommendations/post/:post_id', async (req, res) => {
   }
 });
 
-// ------------------------ Routes ------------------------
+// ------------------ Routes ------------------
 app.use("/api/auth", authRoutes);
 app.use("/api/github", githubAuthRoutes);
 app.use("/api/projects", projectsdisplay);
@@ -212,40 +259,39 @@ app.use("/api/user", userRoutes);
 app.use("/api/post", projectRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/chat", chatRoutes);
-// app.use("/api/messages", messageRoutes);
 
-// ---------------------- Socket.IO ----------------------
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+// ------------------ Socket.IO ------------------
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
 
-  socket.on('join_room', (postId) => {
+  socket.on("join_room", (postId) => {
     socket.join(postId);
     console.log(`User ${socket.id} joined room ${postId}`);
   });
 
-  socket.on('send_message', ({ room, message }) => {
-    socket.to(room).emit('new_message', message);
+  socket.on("send_message", ({ room, message }) => {
+    socket.to(room).emit("new_message", message);
   });
 
-  socket.on('user_joined_project', ({ room, user }) => {
-    socket.to(room).emit('user_joined', { user });
+  socket.on("user_joined_project", ({ room, user }) => {
+    socket.to(room).emit("user_joined", { user });
   });
 
-  socket.on('typing', ({ room, username }) => {
-    socket.to(room).emit('user_typing', { username });
+  socket.on("typing", ({ room, username }) => {
+    socket.to(room).emit("user_typing", { username });
   });
 
-  socket.on('stop_typing', ({ room, username }) => {
-    socket.to(room).emit('user_stopped_typing', { username });
+  socket.on("stop_typing", ({ room, username }) => {
+    socket.to(room).emit("user_stopped_typing", { username });
   });
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
   });
 });
 
-// ---------------------- Server Start ----------------------
+// ------------------ Start Server ------------------
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
