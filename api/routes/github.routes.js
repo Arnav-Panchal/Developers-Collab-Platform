@@ -4,7 +4,7 @@ import axios from 'axios';
 const router = express.Router();
 
 router.post('/exchange-token', async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://developers-collab-platform.vercel.app');
+  res.setHeader('Access-Control-Allow-Origin', 'https://www.devcheck.store/');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   const { code } = req.body;
 
