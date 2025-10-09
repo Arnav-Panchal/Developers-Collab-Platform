@@ -30,7 +30,7 @@ export default function Login() {
   const apiUrl = resolveProxyUrl('/api/auth/login');
 
 
-      const res = await fetch('https://developers-collab-platform-1.onrender.com/api/github/exchange-token', {
+      const res = await fetch('https://www.devcheck.store/api/github/exchange-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
