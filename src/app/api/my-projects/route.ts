@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { projects, projectUsers } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 /**
  * GET /api/my-projects?developerId=XXX
@@ -41,8 +41,10 @@ export async function GET(req: NextRequest) {
             .select()
             .from(projectUsers)
             .where(
-              eq(projectUsers.projectId, project.id) &&
+              and(
+                eq(projectUsers.projectId, project.id),
                 eq(projectUsers.userId, developerId)
+              )
             )
             .limit(1);
 
