@@ -2,11 +2,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { projects, projectUsers, joinRequests, users } from "@/lib/db/schema";
+import { projects, projectUsers, joinRequests, users, developerInvites } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import JoinProjectButton from "@/components/project/join-button";
 import AIMatchmaker from "@/components/project/ai-matchmaker";
 import ConnectGithubButton from "@/components/project/connect-github-button";
+import InvitationResponseButton from "@/components/project/invitation-response-button";
 import { Calendar, Users, FolderGit2, Briefcase, Github, Brain, MessageSquare } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -97,7 +98,10 @@ export default async function ProjectDetailPage(
   const isMember = members.some((member) => member.id === currentUserId);
 
   let hasPendingRequest = false;
+  let pendingInvite: { id: string } | null = null;
+
   if (currentUserId && !isOwner && !isMember) {
+    // Check for join request
     const pendingRequestResult = await db
       .select()
       .from(joinRequests)
@@ -110,6 +114,20 @@ export default async function ProjectDetailPage(
       )
       .limit(1);
     hasPendingRequest = pendingRequestResult.length > 0;
+
+    // Check for developer invitation
+    const inviteResult = await db
+      .select({ id: developerInvites.id })
+      .from(developerInvites)
+      .where(
+        and(
+          eq(developerInvites.projectId, project.id),
+          eq(developerInvites.recipientId, currentUserId),
+          eq(developerInvites.status, "pending")
+        )
+      )
+      .limit(1);
+    pendingInvite = inviteResult[0] || null;
   }
 
   const startDateStr = new Date(project.startDate).toLocaleDateString("en-US", {
@@ -260,6 +278,11 @@ export default async function ProjectDetailPage(
                   <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center">
                     <p className="text-xs text-emerald-400 font-semibold uppercase tracking-wider">You're on this team</p>
                   </div>
+                ) : pendingInvite && session ? (
+                  <InvitationResponseButton
+                    inviteId={pendingInvite.id}
+                    projectTitle={project.title}
+                  />
                 ) : session ? (
                   <JoinProjectButton
                     projectSlug={project.slug}
