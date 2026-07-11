@@ -25,7 +25,11 @@ export async function GET(req: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Build query filters
-    const conditions: any[] = [ne(users.id, session.user.id)]; // Exclude current user
+    const conditions: any[] = [
+      ne(users.id, session.user.id), // Exclude current user
+      // Only show developers with substantive profiles (has skills OR has bio)
+      sql`(array_length(${users.skills}, 1) > 0 OR ${users.bio} != '')`,
+    ];
 
     if (search) {
       conditions.push(
