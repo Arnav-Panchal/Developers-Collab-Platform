@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, Mail, Check, Clock } from "lucide-react";
+import { Search, SlidersHorizontal, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import InviteToProjectModal from "./invite-to-project-modal";
 
 type Developer = {
   id: string;
@@ -43,7 +44,7 @@ export default function DiscoverDevelopers() {
   });
 
   const [showFilters, setShowFilters] = useState(false);
-  const [inviting, setInviting] = useState<string | null>(null);
+  const [selectedDevForInvite, setSelectedDevForInvite] = useState<{ id: string; username: string } | null>(null);
 
   const handleApplyFilters = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -99,21 +100,41 @@ export default function DiscoverDevelopers() {
     fetchDevelopers();
   }, [page, activeFilters]);
 
-  const handleInvite = async (developerId: string) => {
-    // Invites are done from project context
-    // This button is a read-only reference - actual invites happen on project pages
-    console.log("Developer profile:", developerId);
+  const handleInvite = (developer: { id: string; username: string }) => {
+    setSelectedDevForInvite(developer);
+  };
+
+  const handleSendInvite = async (projectId: string) => {
+    if (!selectedDevForInvite) return;
+
+    try {
+      const res = await fetch("/api/developers/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId,
+          recipientId: selectedDevForInvite.id,
+          message: `You're invited to join this project!`,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to send invite");
+      }
+
+      // Update UI to show success
+      setDevelopers((prev) =>
+        prev.filter((dev) => dev.id !== selectedDevForInvite.id)
+      );
+      setSelectedDevForInvite(null);
+    } catch (error) {
+      console.error("Error sending invite:", error);
+      throw error;
+    }
   };
 
   return (
     <div className="space-y-8">
-      {/* Info Banner */}
-      <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/20">
-        <p className="text-sm text-indigo-300">
-          💡 <strong>Tip:</strong> Browse developers here, then invite them from a project page. Visit a project to send invitations and build your team.
-        </p>
-      </div>
-
       {/* Search & Filter Bar */}
       <form onSubmit={handleApplyFilters} className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
@@ -295,12 +316,11 @@ export default function DiscoverDevelopers() {
               {/* Invite Button */}
               <div className="pt-4 mt-4 border-t border-zinc-900">
                 <button
-                  onClick={() => handleInvite(dev.id)}
-                  disabled={inviting === dev.id}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl transition-colors"
+                  onClick={() => handleInvite({ id: dev.id, username: dev.username })}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-colors"
                 >
                   <Mail className="h-3.5 w-3.5" />
-                  {inviting === dev.id ? "Inviting..." : "Invite to Project"}
+                  Invite to Project
                 </button>
               </div>
             </motion.div>
@@ -330,6 +350,18 @@ export default function DiscoverDevelopers() {
           </button>
         </div>
       )}
+
+      {/* Invite Modal */}
+      <AnimatePresence>
+        {selectedDevForInvite && (
+          <InviteToProjectModal
+            developerId={selectedDevForInvite.id}
+            developerName={selectedDevForInvite.username}
+            onClose={() => setSelectedDevForInvite(null)}
+            onInvite={handleSendInvite}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
