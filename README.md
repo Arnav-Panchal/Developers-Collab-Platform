@@ -10,27 +10,26 @@ DevConnect helps developers find the right collaborators, analyze skills with AI
 - 🧠 Groq AI skill analysis, developer summaries, and teammate suggestions
 - 🤝 Project collaboration & team management
 - 📊 GitHub project analysis and tech stack extraction
-- 💬 Real-time chat for project groups (Socket.IO)
+- 💬 Team chat for project groups
 - 🔎 AI-powered project & collaborator recommendations
 - 🔔 In-app notification system
 
 ## 🛠️ Tech Stack
 
-- **Framework:** Next.js 15 (App Router) + TypeScript
+- **Framework:** Next.js 16 (App Router) + TypeScript
 - **Styling:** Tailwind CSS v4
-- **Database:** MongoDB Atlas + Mongoose
+- **Database:** PostgreSQL (Supabase) + Drizzle ORM
 - **Auth:** Auth.js (NextAuth v5) — GitHub OAuth
 - **AI:** Groq SDK (LLaMA 3.3)
 - **State:** Zustand
 - **Validation:** Zod
-- **Real-time:** Socket.IO
 - **Hosting:** Vercel
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js 18+
-- MongoDB Atlas account
+- A Supabase (or other PostgreSQL) database
 - GitHub OAuth App
 - Groq API key (free at [console.groq.com](https://console.groq.com))
 
@@ -47,7 +46,7 @@ npm install
 # Copy environment template and fill in values
 cp .env.example .env.local
 
-# Run database migration (creates collections & indexes)
+# Run database migrations (creates tables & indexes)
 npm run db:migrate
 
 # Start development server
@@ -68,13 +67,14 @@ src/
 │   ├── projects/          # Project pages
 │   └── sign-in/           # Authentication
 ├── components/            # React components
-│   └── layout/            # Layout components (header, footer)
+│   └── layout/            # Layout components (header)
 ├── lib/                   # Core libraries
-│   ├── db/                # Database connection & models
-│   │   ├── models/        # Mongoose models
-│   │   └── migrate.ts     # Migration script
+│   ├── db/                # Database connection, schema & migrations
+│   │   ├── schema.ts      # Drizzle ORM schema
+│   │   ├── migrations/    # Generated SQL migrations
+│   │   └── migrate.ts     # Migration runner script
 │   ├── auth.ts            # Auth.js configuration
-│   ├── groq.ts            # Groq AI client
+│   ├── groq.ts             # Groq AI client
 │   ├── stores.ts          # Zustand state stores
 │   ├── utils.ts           # Shared utilities
 │   └── validations.ts     # Zod schemas
