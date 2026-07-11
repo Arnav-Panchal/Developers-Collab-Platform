@@ -17,11 +17,12 @@ type RepoInfo = {
 
 /**
  * Analyze GitHub profile and generate an authentic technical bio
+ * Returns empty string if no real activity to report
  */
 export async function generateBioFromGitHub(githubUsername: string): Promise<string> {
   try {
     if (!githubUsername || githubUsername.trim() === "") {
-      return "Developer building things on GitHub.";
+      return "";
     }
 
     // Fetch user repos
@@ -33,7 +34,7 @@ export async function generateBioFromGitHub(githubUsername: string): Promise<str
     });
 
     if (!repos || repos.length === 0) {
-      return `GitHub profile: github.com/${githubUsername}`;
+      return "Fresher developer exploring GitHub.";
     }
 
     // Analyze languages used
@@ -77,7 +78,7 @@ export async function generateBioFromGitHub(githubUsername: string): Promise<str
     return bio;
   } catch (error) {
     console.error("Error generating bio from GitHub:", error);
-    return "Check their GitHub profile for their work.";
+    return "";
   }
 }
 
