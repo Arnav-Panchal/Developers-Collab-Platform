@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s | DevConnect",
   },
   description:
-    "Find the right collaborators, analyze skills with AI, and build amazing projects together. DevConnect uses Groq AI to match developers with the perfect team.",
+    "Find the right collaborators, analyze skills with AI, and build amazing projects together. DevConnect uses advanced AI to match developers with the perfect team.",
   keywords: [
     "developer collaboration",
     "team matching",

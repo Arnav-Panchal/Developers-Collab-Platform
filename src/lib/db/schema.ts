@@ -21,6 +21,9 @@ export const notificationTypeEnum = [
   "join_request",
   "request_accepted",
   "request_rejected",
+  "developer_invited",
+  "invite_accepted",
+  "invite_rejected",
   "new_message",
   "project_update",
 ] as const;
@@ -71,6 +74,7 @@ export const projects = pgTable(
       .notNull(),
     aiSummary: text("ai_summary").default("").notNull(),
     githubRepoUrl: text("github_repo_url").default("").notNull(),
+    isGithubConnected: boolean("is_github_connected").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -121,6 +125,35 @@ export const joinRequests = pgTable(
     uniqueIndex("join_requests_uniq_idx").on(table.projectId, table.userId, table.status),
     index("join_requests_project_idx").on(table.projectId, table.status),
     index("join_requests_user_idx").on(table.userId, table.status),
+  ]
+);
+
+// Developer invitations from project members
+export const developerInvites = pgTable(
+  "developer_invites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id")
+      .references(() => projects.id, { onDelete: "cascade" })
+      .notNull(),
+    senderId: uuid("sender_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    recipientId: uuid("recipient_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    message: text("message").default("").notNull(),
+    status: varchar("status", { length: 20 })
+      .default("pending")
+      .notNull(), // pending, accepted, rejected
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("developer_invites_uniq_idx").on(table.projectId, table.recipientId, table.status),
+    index("developer_invites_project_idx").on(table.projectId, table.status),
+    index("developer_invites_recipient_idx").on(table.recipientId, table.status),
+    index("developer_invites_sender_idx").on(table.senderId),
   ]
 );
 

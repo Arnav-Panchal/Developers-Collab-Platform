@@ -92,11 +92,11 @@ export default function NotificationsList() {
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="glass rounded-xl p-4 flex items-start gap-4">
-            <div className="skeleton w-10 h-10 rounded-full flex-shrink-0" />
+          <div key={i} className="glass rounded-xl p-4 flex items-start gap-4 border border-zinc-900 bg-zinc-950/20">
+            <div className="skeleton w-8 h-8 rounded-full flex-shrink-0" />
             <div className="flex-1 space-y-2">
-              <div className="skeleton h-4 w-4/5" />
-              <div className="skeleton h-3 w-2/5" />
+              <div className="skeleton h-3 w-4/5" />
+              <div className="skeleton h-2 w-2/5" />
             </div>
           </div>
         ))}
@@ -117,15 +117,15 @@ export default function NotificationsList() {
   const getIcon = (type: string) => {
     switch (type) {
       case "join_request":
-        return <PlusCircle className="h-5 w-5 text-indigo-400" />;
+        return <PlusCircle className="h-4 w-4 text-zinc-450" />;
       case "request_accepted":
-        return <Check className="h-5 w-5 text-green-400" />;
+        return <Check className="h-4 w-4 text-emerald-450" />;
       case "request_rejected":
-        return <AlertCircle className="h-5 w-5 text-red-400" />;
+        return <AlertCircle className="h-4 w-4 text-red-450" />;
       case "new_message":
-        return <MessageSquare className="h-5 w-5 text-cyan-400" />;
+        return <MessageSquare className="h-4 w-4 text-zinc-450" />;
       default:
-        return <AlertCircle className="h-5 w-5 text-gray-400" />;
+        return <AlertCircle className="h-4 w-4 text-zinc-550" />;
     }
   };
 
@@ -134,14 +134,14 @@ export default function NotificationsList() {
       {/* List Header */}
       {notifications.length > 0 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-400">
+          <p className="text-xs text-zinc-450">
             You have <span className="text-white font-semibold">{unreadCount}</span> unread notifications
           </p>
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllAsRead}
               disabled={markingAll}
-              className="flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 text-xs font-semibold text-zinc-450 hover:text-white disabled:opacity-50 transition-colors cursor-pointer"
             >
               {markingAll ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -156,7 +156,7 @@ export default function NotificationsList() {
 
       {/* Notifications Items */}
       {notifications.length === 0 ? (
-        <div className="glass rounded-2xl p-12 text-center text-gray-500">
+        <div className="glass rounded-2xl p-12 text-center text-zinc-500 border border-zinc-800 bg-zinc-950/40 text-xs">
           No notifications yet.
         </div>
       ) : (
@@ -169,9 +169,9 @@ export default function NotificationsList() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 onClick={() => !n.isRead && handleMarkAsRead(n.id)}
-                className={`glass rounded-xl p-4 flex items-start gap-4 transition-all duration-300 ${
+                className={`glass rounded-xl p-4 flex items-start gap-4 transition-all duration-350 border border-zinc-800 bg-zinc-950/40 ${
                   !n.isRead
-                    ? "border-l-4 border-l-indigo-500 cursor-pointer bg-indigo-500/[0.02]"
+                    ? "border-l-2 border-l-white cursor-pointer bg-zinc-900/10"
                     : "opacity-60"
                 }`}
               >
@@ -181,25 +181,25 @@ export default function NotificationsList() {
                   <img
                     src={n.sender.profilePicture}
                     alt={n.sender.username}
-                    className="w-10 h-10 rounded-full border border-white/10 object-cover"
+                    className="w-8 h-8 rounded-full border border-zinc-850 object-cover"
                   />
-                  <div className="absolute -bottom-1 -right-1 bg-slate-950 p-0.5 rounded-full border border-white/10">
+                  <div className="absolute -bottom-1 -right-1 bg-black p-0.5 rounded-full border border-zinc-850">
                     {getIcon(n.type)}
                   </div>
                 </div>
 
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm text-gray-200 font-medium leading-snug">
+                  <p className="text-xs text-zinc-200 font-medium leading-snug">
                     {n.message}
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-[10px] text-zinc-500">
                     <span>{timeAgo(n.createdAt)}</span>
                     {n.project && (
                       <>
                         <span>&bull;</span>
                         <a
                           href={`/projects/${n.project.slug}`}
-                          className="text-indigo-400 hover:underline font-semibold"
+                          className="text-white hover:underline font-semibold"
                           onClick={(e) => e.stopPropagation()}
                         >
                           View Project
@@ -210,7 +210,7 @@ export default function NotificationsList() {
                 </div>
 
                 {!n.isRead && (
-                  <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full shrink-0 self-center mt-1" />
+                  <div className="w-1.5 h-1.5 bg-white rounded-full shrink-0 self-center mt-1" />
                 )}
               </motion.div>
             ))}

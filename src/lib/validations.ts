@@ -52,6 +52,7 @@ const projectBaseSchema = z.object({
     message: "Invalid end date",
   }),
   githubRepoUrl: z.string().url().optional().or(z.literal("")),
+  autoCreateRepo: z.boolean().optional(),
 });
 
 export const createProjectSchema = projectBaseSchema.refine(

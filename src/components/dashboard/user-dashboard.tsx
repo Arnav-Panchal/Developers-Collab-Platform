@@ -148,9 +148,9 @@ export default function UserDashboard() {
   const pendingRequestsCount = data?.incomingRequests.length || 0;
 
   const quickStats = [
-    { label: "My Projects", value: ownedCount, icon: FolderGit2, color: "text-indigo-400" },
-    { label: "Joined Teams", value: joinedCount, icon: Users, color: "text-violet-400" },
-    { label: "Pending Invites", value: pendingRequestsCount, icon: GitPullRequest, color: "text-cyan-400" },
+    { label: "My Projects", value: ownedCount, icon: FolderGit2, color: "text-zinc-300" },
+    { label: "Joined Teams", value: joinedCount, icon: Users, color: "text-zinc-300" },
+    { label: "Pending Invites", value: pendingRequestsCount, icon: GitPullRequest, color: "text-zinc-300" },
   ];
 
   return (
@@ -160,14 +160,14 @@ export default function UserDashboard() {
         {quickStats.map((stat, idx) => (
           <div
             key={idx}
-            className="glass rounded-xl p-5 flex items-center gap-4 hover:border-indigo-500/25 transition-all"
+            className="glass rounded-xl p-5 flex items-center gap-4 border border-zinc-800 bg-zinc-950/40 hover:border-zinc-700 transition-all"
           >
-            <div className={`w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center ${stat.color}`}>
-              <stat.icon className="w-5 h-5" />
+            <div className={`w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center ${stat.color}`}>
+              <stat.icon className="w-4.5 h-4.5" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{stat.value}</p>
-              <p className="text-sm text-gray-400">{stat.label}</p>
+              <p className="text-2xl font-bold text-white tracking-tight">{stat.value}</p>
+              <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider mt-0.5">{stat.label}</p>
             </div>
           </div>
         ))}
@@ -177,26 +177,26 @@ export default function UserDashboard() {
         {/* Left Column: Projects & Teams (Takes 2 cols) */}
         <div className="lg:col-span-2 space-y-6">
           {/* My Projects */}
-          <div className="glass rounded-2xl p-6">
+          <div className="glass rounded-2xl p-6 border border-zinc-800 bg-zinc-950/40">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold flex items-center gap-2 text-white">
-                <FolderGit2 className="w-5 h-5 text-indigo-400" />
+              <h2 className="text-sm font-bold flex items-center gap-2 text-white uppercase tracking-wider">
+                <FolderGit2 className="w-4.5 h-4.5 text-zinc-400" />
                 Projects I Own ({ownedCount})
               </h2>
               <Link
                 href="/projects/create"
-                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+                className="text-xs font-semibold text-zinc-400 hover:text-white transition-colors"
               >
                 + Create Project
               </Link>
             </div>
 
             {ownedCount === 0 ? (
-              <div className="text-center py-8 rounded-xl bg-white/[0.01] border border-dashed border-white/5">
-                <p className="text-sm text-gray-500">You haven&apos;t posted any projects yet.</p>
+              <div className="text-center py-8 rounded-xl bg-zinc-950/30 border border-dashed border-zinc-850">
+                <p className="text-xs text-zinc-500">You haven&apos;t posted any projects yet.</p>
                 <Link
                   href="/projects/create"
-                  className="inline-block mt-3 text-sm text-indigo-400 font-semibold hover:underline"
+                  className="inline-block mt-2.5 text-xs text-zinc-300 font-semibold hover:underline"
                 >
                   Create one now
                 </Link>
@@ -206,14 +206,14 @@ export default function UserDashboard() {
                 {data?.owned.map((project) => (
                   <div
                     key={project.id}
-                    className="p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors flex items-center justify-between"
+                    className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-900 hover:border-zinc-800 transition-colors flex items-center justify-between"
                   >
                     <div>
-                      <h3 className="font-bold text-white text-base">{project.title}</h3>
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-1">{project.description}</p>
+                      <h3 className="font-bold text-white text-sm tracking-tight">{project.title}</h3>
+                      <p className="text-xs text-zinc-500 mt-1 line-clamp-1 leading-relaxed">{project.description}</p>
                       <div className="flex gap-1.5 mt-2.5">
                         {project.technologies.slice(0, 3).map((tech) => (
-                          <span key={tech} className="bg-white/5 text-gray-400 text-[10px] px-2 py-0.5 rounded-md">
+                          <span key={tech} className="tag text-[9px]">
                             {tech}
                           </span>
                         ))}
@@ -221,9 +221,9 @@ export default function UserDashboard() {
                     </div>
                     <Link
                       href={`/projects/${project.slug}`}
-                      className="p-2 bg-white/5 rounded-lg text-gray-400 hover:text-white hover:bg-indigo-600 transition-all shrink-0"
+                      className="p-2 bg-zinc-900 border border-zinc-855 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-850 transition-all shrink-0"
                     >
-                      <ArrowRight className="h-4 w-4" />
+                      <ArrowRight className="h-4.5 w-4.5" />
                     </Link>
                   </div>
                 ))}
@@ -232,18 +232,18 @@ export default function UserDashboard() {
           </div>
 
           {/* Joined Teams */}
-          <div className="glass rounded-2xl p-6">
-            <h2 className="text-lg font-bold flex items-center gap-2 text-white mb-5">
-              <Users className="w-5 h-5 text-violet-400" />
+          <div className="glass rounded-2xl p-6 border border-zinc-800 bg-zinc-950/40">
+            <h2 className="text-sm font-bold flex items-center gap-2 text-white mb-5 uppercase tracking-wider">
+              <Users className="w-4.5 h-4.5 text-zinc-400" />
               Joined Collaboration Teams ({joinedCount})
             </h2>
 
             {joinedCount === 0 ? (
-              <div className="text-center py-8 rounded-xl bg-white/[0.01] border border-dashed border-white/5">
-                <p className="text-sm text-gray-500">You haven&apos;t joined any project teams yet.</p>
+              <div className="text-center py-8 rounded-xl bg-zinc-950/30 border border-dashed border-zinc-850">
+                <p className="text-xs text-zinc-500">You haven&apos;t joined any project teams yet.</p>
                 <Link
                   href="/discover"
-                  className="inline-block mt-3 text-sm text-violet-400 font-semibold hover:underline"
+                  className="inline-block mt-2.5 text-xs text-zinc-300 font-semibold hover:underline"
                 >
                   Discover open projects
                 </Link>
@@ -253,16 +253,16 @@ export default function UserDashboard() {
                 {data?.joined.map((project) => (
                   <div
                     key={project.id}
-                    className="p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors flex items-center justify-between"
+                    className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-900 hover:border-zinc-800 transition-colors flex items-center justify-between"
                   >
                     <div>
-                      <h3 className="font-bold text-white text-base">{project.title}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <h3 className="font-bold text-white text-sm tracking-tight">{project.title}</h3>
+                      <p className="text-[11px] text-zinc-500 mt-0.5">
                         Owned by @{project.owner?.username || "anonymous"}
                       </p>
                       <div className="flex gap-1.5 mt-2.5">
                         {project.technologies.slice(0, 3).map((tech) => (
-                          <span key={tech} className="bg-white/5 text-gray-400 text-[10px] px-2 py-0.5 rounded-md">
+                          <span key={tech} className="tag text-[9px]">
                             {tech}
                           </span>
                         ))}
@@ -270,9 +270,9 @@ export default function UserDashboard() {
                     </div>
                     <Link
                       href={`/projects/${project.slug}`}
-                      className="p-2 bg-white/5 rounded-lg text-gray-400 hover:text-white hover:bg-violet-600 transition-all shrink-0"
+                      className="p-2 bg-zinc-900 border border-zinc-855 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-850 transition-all shrink-0"
                     >
-                      <ArrowRight className="h-4 w-4" />
+                      <ArrowRight className="h-4.5 w-4.5" />
                     </Link>
                   </div>
                 ))}
@@ -284,14 +284,14 @@ export default function UserDashboard() {
         {/* Right Column: Invites & Requests (Takes 1 col) */}
         <div className="space-y-6">
           {/* Incoming Join Requests */}
-          <div className="glass rounded-2xl p-6">
-            <h2 className="text-base font-bold flex items-center gap-2 text-white mb-4">
-              <Bell className="w-4 h-4 text-cyan-400" />
+          <div className="glass rounded-2xl p-6 border border-zinc-800 bg-zinc-950/40">
+            <h2 className="text-sm font-bold flex items-center gap-2 text-white mb-4 uppercase tracking-wider">
+              <Bell className="w-4 h-4 text-zinc-400" />
               Incoming Requests
             </h2>
 
             {pendingRequestsCount === 0 ? (
-              <div className="text-center py-6 text-xs text-gray-500 bg-white/[0.01] rounded-xl border border-white/5">
+              <div className="text-center py-6 text-[11px] text-zinc-500 bg-zinc-950/30 border border-dashed border-zinc-850 rounded-xl">
                 No active join requests for your projects.
               </div>
             ) : (
@@ -299,27 +299,27 @@ export default function UserDashboard() {
                 {data?.incomingRequests.map((req) => (
                   <div
                     key={req.id}
-                    className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col gap-3.5"
+                    className="p-3.5 rounded-xl bg-zinc-950/50 border border-zinc-900 flex flex-col gap-3.5"
                   >
                     <div className="flex items-start gap-2.5">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={req.user?.profilePicture}
-                        className="w-8 h-8 rounded-full border border-white/10 object-cover mt-0.5"
+                        className="w-7 h-7 rounded-full border border-zinc-850 object-cover mt-0.5"
                         alt="applicant"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-gray-300">
+                        <p className="text-xs font-bold text-zinc-300">
                           @{req.user?.username}
                         </p>
-                        <p className="text-[10px] text-gray-500">
-                          wants to join <span className="font-semibold text-indigo-400">{req.project.title}</span>
+                        <p className="text-[10px] text-zinc-500">
+                          wants to join <span className="font-semibold text-white">{req.project.title}</span>
                         </p>
                       </div>
                     </div>
 
                     {req.message && (
-                      <p className="text-xs text-gray-400 bg-white/5 p-2 rounded-lg italic">
+                      <p className="text-[11px] text-zinc-400 bg-zinc-950/80 border border-zinc-900 p-2 rounded-lg italic">
                         &quot;{req.message}&quot;
                       </p>
                     )}
@@ -328,25 +328,25 @@ export default function UserDashboard() {
                       <button
                         onClick={() => handleRequestAction(req.id, "reject")}
                         disabled={actionId !== null}
-                        className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white transition-all disabled:opacity-50"
+                        className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white transition-all disabled:opacity-50 cursor-pointer"
                         title="Decline"
                       >
                         {actionId === req.id ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          <Loader2 className="h-3 w-3 animate-spin" />
                         ) : (
-                          <X className="h-3.5 w-3.5" />
+                          <X className="h-3 w-3" />
                         )}
                       </button>
                       <button
                         onClick={() => handleRequestAction(req.id, "accept")}
                         disabled={actionId !== null}
-                        className="flex items-center gap-1 px-3 py-2 rounded-lg bg-green-500/10 hover:bg-green-500 text-green-400 hover:text-white text-xs font-bold transition-all disabled:opacity-50"
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-green-500/10 hover:bg-green-500 text-green-400 hover:text-white text-[10px] font-bold transition-all disabled:opacity-50 cursor-pointer"
                       >
                         {actionId === req.id ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          <Loader2 className="h-3 w-3 animate-spin" />
                         ) : (
                           <>
-                            <Check className="h-3.5 w-3.5" />
+                            <Check className="h-3 w-3" />
                             Accept
                           </>
                         )}
@@ -359,14 +359,14 @@ export default function UserDashboard() {
           </div>
 
           {/* Outgoing requests */}
-          <div className="glass rounded-2xl p-6">
-            <h2 className="text-base font-bold flex items-center gap-2 text-white mb-4">
-              <GitPullRequest className="w-4 h-4 text-pink-400" />
+          <div className="glass rounded-2xl p-6 border border-zinc-800 bg-zinc-950/40">
+            <h2 className="text-sm font-bold flex items-center gap-2 text-white mb-4 uppercase tracking-wider">
+              <GitPullRequest className="w-4 h-4 text-zinc-400" />
               My Sent Requests
             </h2>
 
             {data?.outgoingRequests.length === 0 ? (
-              <div className="text-center py-6 text-xs text-gray-500 bg-white/[0.01] rounded-xl border border-white/5">
+              <div className="text-center py-6 text-[11px] text-zinc-500 bg-zinc-950/30 border border-dashed border-zinc-850 rounded-xl">
                 You haven&apos;t requested to join any projects.
               </div>
             ) : (
@@ -374,19 +374,19 @@ export default function UserDashboard() {
                 {data?.outgoingRequests.map((req) => (
                   <div
                     key={req.id}
-                    className="p-3 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between"
+                    className="p-3.5 rounded-xl bg-zinc-950/50 border border-zinc-900 flex items-center justify-between"
                   >
                     <div className="min-w-0 pr-2">
-                      <p className="text-xs font-bold text-gray-300 truncate">
+                      <p className="text-xs font-bold text-zinc-300 truncate">
                         {req.project.title}
                       </p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">
+                      <p className="text-[9px] text-zinc-500 mt-0.5">
                         Sent {new Date(req.createdAt).toLocaleDateString()}
                       </p>
                     </div>
 
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                      className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
                         req.status === "accepted"
                           ? "bg-green-500/10 text-green-400"
                           : req.status === "rejected"

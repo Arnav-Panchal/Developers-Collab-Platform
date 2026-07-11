@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { projects, users, projectUsers } from "@/lib/db/schema";
-import { generateMatchReasoning } from "@/lib/groq";
+import { generateMatchReasoning, recommendTeammates } from "@/lib/groq";
 import { eq, and, not, notInArray } from "drizzle-orm";
 
 /**
@@ -61,51 +61,91 @@ export async function POST(req: NextRequest) {
         )
       );
 
-    // 4. Score candidates by skill intersection
-    const projectSkillsLower = project.requiredSkills.map((s) => s.toLowerCase());
+    // 4. Run AI Teammate Matchmaker Engine
+    let recommendations: {
+      id: string;
+      username: string;
+      profilePicture: string;
+      skills: string[];
+      matchingSkills: string[];
+      reason: string;
+    }[] = [];
+    if (candidateUsers.length > 0) {
+      const aiRecommendations = await recommendTeammates(
+        {
+          title: project.title,
+          description: project.description,
+          technologies: project.technologies,
+          requiredSkills: project.requiredSkills,
+        },
+        candidateUsers
+      );
 
-    const scoredCandidates = candidateUsers
-      .map((candidate) => {
-        const intersection = candidate.skills.filter((skill) =>
-          projectSkillsLower.includes(skill.toLowerCase())
-        );
+      if (aiRecommendations.length > 0) {
+        // Map user profile details back to the recommended IDs
+        recommendations = aiRecommendations
+          .map((rec) => {
+            const candidate = candidateUsers.find((u) => u.id === rec.id);
+            if (!candidate) return null;
 
-        return {
-          ...candidate,
-          matchingSkills: intersection,
-          score: intersection.length,
-        };
-      })
-      .filter((candidate) => candidate.score > 0) // At least 1 overlapping skill
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3); // Top 3 recommendations
+            return {
+              id: candidate.id,
+              username: candidate.username,
+              profilePicture: candidate.profilePicture,
+              skills: candidate.skills,
+              matchingSkills: rec.matchingSkills,
+              reason: rec.reason,
+            };
+          })
+          .filter((item): item is NonNullable<typeof item> => item !== null);
+      }
+    }
 
-    // 5. Generate AI match reasoning for top candidates
-    const recommendations = await Promise.all(
-      scoredCandidates.map(async (candidate) => {
-        let reason = "";
-        try {
-          reason = await generateMatchReasoning(
-            project.title,
-            project.requiredSkills,
-            candidate.skills,
-            candidate.username
+    // 5. Fallback to Local Search Matchmaking if AI returned no recommendations
+    if (recommendations.length === 0 && candidateUsers.length > 0) {
+      const projectSkillsLower = project.requiredSkills.map((s) => s.toLowerCase());
+
+      const scoredCandidates = candidateUsers
+        .map((candidate) => {
+          const intersection = candidate.skills.filter((skill) =>
+            projectSkillsLower.includes(skill.toLowerCase())
           );
-        } catch (err) {
-          console.error(`Match reasoning failed for ${candidate.username}:`, err);
-          reason = `Matches skills in ${candidate.matchingSkills.join(", ")}.`;
-        }
 
-        return {
-          id: candidate.id,
-          username: candidate.username,
-          profilePicture: candidate.profilePicture,
-          skills: candidate.skills,
-          matchingSkills: candidate.matchingSkills,
-          reason,
-        };
-      })
-    );
+          return {
+            ...candidate,
+            matchingSkills: intersection,
+            score: intersection.length,
+          };
+        })
+        .filter((candidate) => candidate.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+
+      recommendations = await Promise.all(
+        scoredCandidates.map(async (candidate) => {
+          let reason = "";
+          try {
+            reason = await generateMatchReasoning(
+              project.title,
+              project.requiredSkills,
+              candidate.skills,
+              candidate.username
+            );
+          } catch (err) {
+            reason = `Matches skills in ${candidate.matchingSkills.join(", ")}.`;
+          }
+
+          return {
+            id: candidate.id,
+            username: candidate.username,
+            profilePicture: candidate.profilePicture,
+            skills: candidate.skills,
+            matchingSkills: candidate.matchingSkills,
+            reason,
+          };
+        })
+      );
+    }
 
     return NextResponse.json(recommendations);
   } catch (error) {

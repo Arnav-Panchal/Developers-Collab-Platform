@@ -128,3 +128,96 @@ Write a single sentence (max 30 words) explaining the match. Be specific about o
     temperature: 0.4,
   });
 }
+
+interface RecommendedTeammate {
+  id: string;
+  matchingSkills: string[];
+  reason: string;
+  score: number;
+}
+
+/**
+ * AI-powered teammate recommendation engine.
+ * Ranks candidates semantically using Llama 3 on Groq.
+ */
+export async function recommendTeammates(
+  project: {
+    title: string;
+    description: string;
+    technologies: string[];
+    requiredSkills: string[];
+  },
+  candidates: {
+    id: string;
+    username: string;
+    bio: string;
+    skills: string[];
+  }[]
+): Promise<RecommendedTeammate[]> {
+  if (candidates.length === 0) return [];
+
+  const prompt = `You are a matchmaker assistant for a developer collaboration platform.
+Analyze this project and select the top 3 developer candidates who best match the requirements.
+Evaluate them based on skill alignment, complementary skills, and their bios.
+
+Project Details:
+- Title: ${project.title}
+- Description: ${project.description}
+- Technologies: ${project.technologies.join(", ")}
+- Required Skills: ${project.requiredSkills.join(", ")}
+
+Candidate Developers list:
+${candidates
+  .map(
+    (c, i) =>
+      `[Candidate ${i}] ID: "${c.id}", Username: "${c.username}", Bio: "${c.bio}", Skills: ${JSON.stringify(c.skills)}`
+  )
+  .join("\n")}
+
+Respond with a JSON object containing a "recommendations" array. Each item must have:
+- "id": string (the exact candidate ID from the list)
+- "matchingSkills": string[] (subset of the candidate's skills that match or complement the project requirements)
+- "reason": string (a concise 1-sentence explanation of why they fit, max 30 words)
+- "score": number (relevance matching score from 1 to 10)
+
+Respond ONLY with valid JSON. Example:
+{
+  "recommendations": [
+    {
+      "id": "candidate-uuid-1",
+      "matchingSkills": ["Go", "Distributed Systems"],
+      "reason": "Alice has direct experience with systems programming in Go and replication concepts matching your distributed store needs.",
+      "score": 9
+    }
+  ]
+}`;
+
+  try {
+    const responseText = await groqClient.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: "You are a professional recruiting coordinator. You perform semantic analysis of developer skillsets and project requirements to output structured recommendation lists in JSON format.",
+        },
+        { role: "user", content: prompt },
+      ],
+      model: DEFAULT_MODEL,
+      max_tokens: 1500,
+      temperature: 0.2,
+      response_format: { type: "json_object" },
+    });
+
+    const resultText = responseText.choices[0]?.message?.content || "";
+    const parsed = JSON.parse(resultText);
+    
+    if (parsed && Array.isArray(parsed.recommendations)) {
+      return parsed.recommendations;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error("AI recommendation engine failed:", error);
+    // Return empty to allow fallback handling
+    return [];
+  }
+}

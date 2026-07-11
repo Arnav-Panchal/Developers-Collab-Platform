@@ -1,25 +1,57 @@
-import type { Metadata } from "next";
-import DiscoverCatalog from "@/components/project/discover-catalog";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Discover Projects",
-  description: "Browse and discover developer collaboration projects. Filter by technology, skills, and find your next team.",
-};
+import type { Metadata } from "next";
+import { useState } from "react";
+import { Users, FolderGit2 } from "lucide-react";
+import DiscoverCatalog from "@/components/project/discover-catalog";
+import DiscoverDevelopers from "@/components/project/discover-developers";
 
 export default function DiscoverPage() {
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Page Header */}
-      <div className="mb-10">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-3">
-          Discover <span className="gradient-text">Projects</span>
-        </h1>
-        <p className="text-gray-400 text-lg">
-          Find open projects that match your skills and interests.
-        </p>
-      </div>
+  const [activeTab, setActiveTab] = useState<"projects" | "devs">("projects");
 
-      <DiscoverCatalog />
+  return (
+    <div className="min-h-screen bg-black">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-12">
+        {/* Page Header */}
+        <div className="mb-12">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-3 text-white">
+            Discover <span className="text-indigo-400">Talent & Projects</span>
+          </h1>
+          <p className="text-zinc-400 text-lg">
+            Find developers to collaborate with or open projects that match your skills.
+          </p>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-12 border-b border-zinc-800">
+          <button
+            onClick={() => setActiveTab("projects")}
+            className={`flex items-center gap-2 px-4 py-4 font-semibold text-sm transition-colors border-b-2 ${
+              activeTab === "projects"
+                ? "text-white border-indigo-500"
+                : "text-zinc-500 border-transparent hover:text-zinc-300"
+            }`}
+          >
+            <FolderGit2 className="h-4 w-4" />
+            Projects
+          </button>
+          <button
+            onClick={() => setActiveTab("devs")}
+            className={`flex items-center gap-2 px-4 py-4 font-semibold text-sm transition-colors border-b-2 ${
+              activeTab === "devs"
+                ? "text-white border-indigo-500"
+                : "text-zinc-500 border-transparent hover:text-zinc-300"
+            }`}
+          >
+            <Users className="h-4 w-4" />
+            Developers
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === "projects" && <DiscoverCatalog />}
+        {activeTab === "devs" && <DiscoverDevelopers />}
+      </div>
     </div>
   );
 }

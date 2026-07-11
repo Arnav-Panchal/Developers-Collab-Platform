@@ -119,8 +119,8 @@ export default function ProjectChat({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-3">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-        <p className="text-sm text-gray-400">Loading chat workspace...</p>
+        <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+        <p className="text-xs text-zinc-500">Loading chat workspace...</p>
       </div>
     );
   }
@@ -128,19 +128,19 @@ export default function ProjectChat({
   return (
     <div className="max-w-4xl mx-auto py-6 flex flex-col h-[78vh]">
       {/* Chat header */}
-      <div className="glass rounded-t-2xl p-4 flex items-center justify-between border-b border-white/5">
+      <div className="glass rounded-t-2xl p-4 flex items-center justify-between border border-zinc-800 bg-zinc-950/40">
         <div className="flex items-center gap-3">
           <Link
             href={`/projects/${projectSlug}`}
-            className="p-2 bg-white/5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+            className="p-2 bg-zinc-900 border border-zinc-850 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-850 transition-all"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5" />
           </Link>
           <div>
-            <h1 className="font-bold text-white text-base sm:text-lg truncate max-w-[200px] sm:max-w-sm">
+            <h1 className="font-bold text-white text-sm sm:text-base truncate max-w-[200px] sm:max-w-sm">
               {projectTitle}
             </h1>
-            <p className="text-[10px] text-indigo-400 font-semibold uppercase tracking-wider flex items-center gap-1 mt-0.5">
+            <p className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider flex items-center gap-1 mt-0.5">
               <Users className="h-3 w-3" />
               Team Chatroom
             </p>
@@ -149,7 +149,7 @@ export default function ProjectChat({
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto glass p-6 space-y-4 min-h-0 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto glass p-6 space-y-4 min-h-0 border-x border-zinc-800 bg-zinc-950/20 custom-scrollbar">
         {error && (
           <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-xl text-center text-xs">
             {error}
@@ -157,9 +157,9 @@ export default function ProjectChat({
         )}
 
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-500 space-y-2">
-            <MessageSquare className="h-10 w-10 opacity-30" />
-            <p className="text-xs">No messages yet. Send a greeting to start the collaboration!</p>
+          <div className="flex flex-col items-center justify-center h-full text-zinc-500 space-y-2">
+            <MessageSquare className="h-8 w-8 opacity-30 text-zinc-400" />
+            <p className="text-xs text-zinc-500">No messages yet. Send a greeting to start the collaboration!</p>
           </div>
         ) : (
           messages.map((msg) => {
@@ -167,7 +167,7 @@ export default function ProjectChat({
             return (
               <div
                 key={msg.id}
-                className={`flex gap-3 max-w-[80%] ${
+                className={`flex gap-2.5 max-w-[80%] ${
                   isSelf ? "ml-auto flex-row-reverse" : "mr-auto"
                 }`}
               >
@@ -176,26 +176,26 @@ export default function ProjectChat({
                   <img
                     src={msg.sender.profilePicture}
                     alt={msg.sender.username}
-                    className="w-8 h-8 rounded-full border border-white/10 object-cover mt-1 shrink-0"
+                    className="w-7 h-7 rounded-full border border-zinc-850 object-cover mt-1 shrink-0"
                   />
                 )}
                 <div>
                   {!isSelf && (
-                    <span className="text-[10px] text-gray-500 pl-1 block mb-0.5">
+                    <span className="text-[9px] text-zinc-550 pl-1 block mb-0.5">
                       @{msg.sender.username}
                     </span>
                   )}
                   <div
-                    className={`p-3.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+                    className={`p-3 rounded-xl text-xs leading-relaxed whitespace-pre-wrap ${
                       isSelf
-                        ? "bg-indigo-600 text-white rounded-tr-none"
-                        : "bg-white/5 text-gray-200 border border-white/5 rounded-tl-none"
+                        ? "bg-zinc-100 text-zinc-950 font-medium rounded-tr-none"
+                        : "bg-zinc-950 text-zinc-200 border border-zinc-900 rounded-tl-none"
                     }`}
                   >
                     {msg.content}
                   </div>
                   <span
-                    className={`text-[9px] text-gray-500 mt-1 block px-1 ${
+                    className={`text-[8px] text-zinc-650 mt-1 block px-1 ${
                       isSelf ? "text-right" : "text-left"
                     }`}
                   >
@@ -213,18 +213,18 @@ export default function ProjectChat({
       </div>
 
       {/* Input area */}
-      <form onSubmit={handleSendMessage} className="glass rounded-b-2xl p-4 border-t border-white/5 flex gap-3">
+      <form onSubmit={handleSendMessage} className="glass rounded-b-2xl p-4 border border-zinc-800 border-t-0 bg-zinc-950/40 flex gap-3">
         <input
           type="text"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Type your message here..."
-          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors text-sm"
+          className="flex-1 bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
         />
         <button
           type="submit"
           disabled={!content.trim() || sending}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl px-5 py-3 transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          className="btn-primary rounded-xl px-5 py-3 transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shrink-0 cursor-pointer"
         >
           {sending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
