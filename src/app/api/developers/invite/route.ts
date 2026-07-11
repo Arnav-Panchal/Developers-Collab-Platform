@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { developerInvites, projects, notifications } from "@/lib/db/schema";
+import { developerInvites, projects, notifications, projectUsers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 
 /**
@@ -40,6 +40,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Only project owner can send invites" },
         { status: 403 }
+      );
+    }
+
+    // Check if user is already a member
+    const memberCheck = await db
+      .select()
+      .from(projectUsers)
+      .where(
+        and(
+          eq(projectUsers.projectId, projectId),
+          eq(projectUsers.userId, recipientId)
+        )
+      )
+      .limit(1);
+
+    if (memberCheck.length > 0) {
+      return NextResponse.json(
+        { error: "User is already a member of this project" },
+        { status: 400 }
       );
     }
 

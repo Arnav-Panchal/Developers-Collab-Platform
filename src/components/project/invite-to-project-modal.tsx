@@ -12,6 +12,7 @@ type Project = {
   requiredSkills: string[];
   teamSize: number;
   status: string;
+  isMember?: boolean;
 };
 
 type InviteToProjectModalProps = {
@@ -36,7 +37,7 @@ export default function InviteToProjectModal({
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch("/api/my-projects");
+        const res = await fetch(`/api/my-projects?developerId=${developerId}`);
         if (!res.ok) throw new Error("Failed to load projects");
         const data = await res.json();
         setProjects(data.projects || []);
@@ -48,7 +49,7 @@ export default function InviteToProjectModal({
     };
 
     fetchProjects();
-  }, []);
+  }, [developerId]);
 
   const handleInvite = async () => {
     if (!selectedProject) return;
@@ -116,18 +117,28 @@ export default function InviteToProjectModal({
               {projects.map((project) => (
                 <button
                   key={project.id}
-                  onClick={() => setSelectedProject(project.id)}
+                  onClick={() => !project.isMember && setSelectedProject(project.id)}
+                  disabled={project.isMember}
                   className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
-                    selectedProject === project.id
+                    project.isMember
+                      ? "bg-zinc-900/30 border-zinc-700 opacity-50 cursor-not-allowed"
+                      : selectedProject === project.id
                       ? "bg-indigo-950/40 border-indigo-500"
                       : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-white truncate">
-                        {project.title}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-white truncate">
+                          {project.title}
+                        </h3>
+                        {project.isMember && (
+                          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 whitespace-nowrap">
+                            Already member
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-zinc-500 mt-1">
                         {project.description.substring(0, 80)}...
                       </p>
