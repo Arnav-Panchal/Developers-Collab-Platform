@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, Mail } from "lucide-react";
+import { Search, SlidersHorizontal, Mail, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import InviteToProjectModal from "./invite-to-project-modal";
+import Link from "next/link";
 
 type Developer = {
   id: string;
@@ -44,7 +44,6 @@ export default function DiscoverDevelopers() {
   });
 
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedDevForInvite, setSelectedDevForInvite] = useState<{ id: string; username: string } | null>(null);
 
   const handleApplyFilters = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -100,38 +99,6 @@ export default function DiscoverDevelopers() {
     fetchDevelopers();
   }, [page, activeFilters]);
 
-  const handleInvite = (developer: { id: string; username: string }) => {
-    setSelectedDevForInvite(developer);
-  };
-
-  const handleSendInvite = async (projectId: string) => {
-    if (!selectedDevForInvite) return;
-
-    try {
-      const res = await fetch("/api/developers/invite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectId,
-          recipientId: selectedDevForInvite.id,
-          message: `You're invited to join this project!`,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to send invite");
-      }
-
-      // Update UI to show success
-      setDevelopers((prev) =>
-        prev.filter((dev) => dev.id !== selectedDevForInvite.id)
-      );
-      setSelectedDevForInvite(null);
-    } catch (error) {
-      console.error("Error sending invite:", error);
-      throw error;
-    }
-  };
 
   return (
     <div className="space-y-8">
@@ -313,15 +280,15 @@ export default function DiscoverDevelopers() {
                 </div>
               </div>
 
-              {/* Invite Button */}
+              {/* View Profile Button */}
               <div className="pt-4 mt-4 border-t border-zinc-900">
-                <button
-                  onClick={() => handleInvite({ id: dev.id, username: dev.username })}
+                <Link
+                  href={`/developers/${dev.username}`}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-colors"
                 >
-                  <Mail className="h-3.5 w-3.5" />
-                  Invite to Project
-                </button>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                  View Profile
+                </Link>
               </div>
             </motion.div>
           ))}
@@ -350,18 +317,6 @@ export default function DiscoverDevelopers() {
           </button>
         </div>
       )}
-
-      {/* Invite Modal */}
-      <AnimatePresence>
-        {selectedDevForInvite && (
-          <InviteToProjectModal
-            developerId={selectedDevForInvite.id}
-            developerName={selectedDevForInvite.username}
-            onClose={() => setSelectedDevForInvite(null)}
-            onInvite={handleSendInvite}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
