@@ -18,6 +18,13 @@ type Message = {
   sender: Sender;
 };
 
+type TeamMember = {
+  id: string;
+  username: string;
+  profilePicture: string;
+  bio: string;
+};
+
 type ProjectChatProps = {
   projectSlug: string;
   projectTitle: string;
@@ -30,11 +37,13 @@ export default function ProjectChat({
   currentUserId,
 }: ProjectChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [content, setContent] = useState("");
   const [error, setError] = useState<string | null>(null);
-  
+  const [showMembers, setShowMembers] = useState(true);
+
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const fetchMessages = async (silent = false): Promise<void> => {
@@ -63,11 +72,25 @@ export default function ProjectChat({
     }
   };
 
+  const fetchTeamMembers = async (): Promise<void> => {
+    try {
+      const res = await fetch(`/api/projects/${projectSlug}/members`);
+      if (!res.ok) {
+        throw new Error("Failed to load team members");
+      }
+      const data = await res.json();
+      setTeamMembers(data.members || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     let ignore = false;
     (async () => {
       if (!ignore) {
         await fetchMessages();
+        await fetchTeamMembers();
       }
     })();
 
@@ -126,7 +149,7 @@ export default function ProjectChat({
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-6 flex flex-col h-[78vh]">
+    <div className="max-w-7xl mx-auto py-6 flex flex-col h-[78vh] gap-4">
       {/* Chat header */}
       <div className="glass rounded-t-2xl p-4 flex items-center justify-between border border-zinc-800 bg-zinc-950/40">
         <div className="flex items-center gap-3">
@@ -148,8 +171,11 @@ export default function ProjectChat({
         </div>
       </div>
 
-      {/* Messages area */}
-      <div className="flex-1 overflow-y-auto glass p-6 space-y-4 min-h-0 border-x border-zinc-800 bg-zinc-950/20 custom-scrollbar">
+      {/* Main chat area with messages and team members */}
+      <div className="flex gap-4 flex-1 min-h-0">
+        {/* Messages area */}
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 overflow-y-auto glass p-6 space-y-4 min-h-0 border border-zinc-800 bg-zinc-950/20 custom-scrollbar rounded-t-2xl">
         {error && (
           <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-xl text-center text-xs">
             {error}
@@ -208,12 +234,12 @@ export default function ProjectChat({
               </div>
             );
           })
-        )}
-        <div ref={bottomRef} />
-      </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
 
-      {/* Input area */}
-      <form onSubmit={handleSendMessage} className="glass rounded-b-2xl p-4 border border-zinc-800 border-t-0 bg-zinc-950/40 flex gap-3">
+        {/* Input area */}
+        <form onSubmit={handleSendMessage} className="glass rounded-b-2xl p-4 border border-zinc-800 border-t-0 bg-zinc-950/40 flex gap-3">
         <input
           type="text"
           value={content}
@@ -221,18 +247,68 @@ export default function ProjectChat({
           placeholder="Type your message here..."
           className="flex-1 bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
         />
-        <button
-          type="submit"
-          disabled={!content.trim() || sending}
-          className="btn-primary rounded-xl px-5 py-3 transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shrink-0 cursor-pointer"
-        >
-          {sending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="h-4 w-4" />
-          )}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={!content.trim() || sending}
+            className="btn-primary rounded-xl px-5 py-3 transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed shrink-0 cursor-pointer"
+          >
+            {sending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </button>
+        </form>
+        </div>
+
+        {/* Team Members Sidebar */}
+        <div className="w-64 hidden lg:flex flex-col gap-4">
+          {/* Toggle button for mobile */}
+          <button
+            onClick={() => setShowMembers(!showMembers)}
+            className="lg:hidden w-full flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 hover:text-white transition-colors text-xs font-semibold"
+          >
+            <Users className="h-4 w-4" />
+            {showMembers ? "Hide" : "Show"} Team
+          </button>
+
+          {/* Members list */}
+          <div className="glass rounded-2xl p-4 border border-zinc-800 bg-zinc-950/40 h-full overflow-y-auto custom-scrollbar">
+            <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              In This Room
+            </h3>
+            <div className="space-y-2.5">
+              {teamMembers.length === 0 ? (
+                <p className="text-xs text-zinc-500 text-center py-4">No team members</p>
+              ) : (
+                teamMembers.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center gap-2.5 p-2.5 rounded-lg bg-zinc-900/50 hover:bg-zinc-900 transition-colors"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={member.profilePicture}
+                      alt={member.username}
+                      className="w-8 h-8 rounded-full border border-zinc-800 object-cover shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-zinc-200 truncate">
+                        @{member.username}
+                      </p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <p className="text-[10px] text-zinc-500">Active</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
