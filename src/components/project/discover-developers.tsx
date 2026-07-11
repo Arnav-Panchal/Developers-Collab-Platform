@@ -15,9 +15,7 @@ type Developer = {
 
 type InviteStatus = "none" | "pending" | "invited" | "accepted" | "rejected";
 
-type DeveloperWithInvite = Developer & {
-  inviteStatus: InviteStatus;
-};
+type DeveloperWithInvite = Developer;
 
 type Pagination = {
   page: number;
@@ -102,17 +100,20 @@ export default function DiscoverDevelopers() {
   }, [page, activeFilters]);
 
   const handleInvite = async (developerId: string) => {
-    // This would be called from project context with projectId
-    // For now, this is a placeholder that would be implemented
-    // when integrated with project detail page
-    console.log("Invite developer:", developerId);
-    setInviting(developerId);
-    // TODO: Call /api/developers/invite with projectId
-    setTimeout(() => setInviting(null), 500);
+    // Invites are done from project context
+    // This button is a read-only reference - actual invites happen on project pages
+    console.log("Developer profile:", developerId);
   };
 
   return (
     <div className="space-y-8">
+      {/* Info Banner */}
+      <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/20">
+        <p className="text-sm text-indigo-300">
+          💡 <strong>Tip:</strong> Browse developers here, then invite them from a project page. Visit a project to send invitations and build your team.
+        </p>
+      </div>
+
       {/* Search & Filter Bar */}
       <form onSubmit={handleApplyFilters} className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
@@ -293,32 +294,14 @@ export default function DiscoverDevelopers() {
 
               {/* Invite Button */}
               <div className="pt-4 mt-4 border-t border-zinc-900">
-                {dev.inviteStatus === "none" || dev.inviteStatus === "rejected" ? (
-                  <button
-                    onClick={() => handleInvite(dev.id)}
-                    disabled={inviting === dev.id}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-semibold rounded-xl transition-colors"
-                  >
-                    <Mail className="h-3.5 w-3.5" />
-                    Invite
-                  </button>
-                ) : dev.inviteStatus === "pending" || dev.inviteStatus === "invited" ? (
-                  <button
-                    disabled
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500/20 text-amber-400 text-xs font-semibold rounded-xl border border-amber-500/30"
-                  >
-                    <Clock className="h-3.5 w-3.5" />
-                    Invite sent
-                  </button>
-                ) : (
-                  <button
-                    disabled
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500/20 text-emerald-400 text-xs font-semibold rounded-xl border border-emerald-500/30"
-                  >
-                    <Check className="h-3.5 w-3.5" />
-                    Accepted
-                  </button>
-                )}
+                <button
+                  onClick={() => handleInvite(dev.id)}
+                  disabled={inviting === dev.id}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl transition-colors"
+                >
+                  <Mail className="h-3.5 w-3.5" />
+                  {inviting === dev.id ? "Inviting..." : "Invite to Project"}
+                </button>
               </div>
             </motion.div>
           ))}
