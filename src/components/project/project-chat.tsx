@@ -297,10 +297,11 @@ export default function ProjectChat({
                       <p className="text-xs font-semibold text-zinc-200 truncate">
                         @{member.username}
                       </p>
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <p className="text-[10px] text-zinc-500">Active</p>
-                      </div>
+                      {member.bio && (
+                        <p className="text-[10px] text-zinc-500 truncate mt-0.5">
+                          {member.bio.substring(0, 40)}...
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))
