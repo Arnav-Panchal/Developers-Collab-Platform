@@ -147,6 +147,7 @@ export async function POST(req: NextRequest) {
       startDate,
       endDate,
       githubRepoUrl,
+      autoCreateRepo,
     } = result.data;
 
     // Generate unique slug
@@ -176,6 +177,50 @@ export async function POST(req: NextRequest) {
       aiSummary = description.substring(0, 150) + "...";
     }
 
+    // Fetch owner GitHub username
+    const ownerUsers = await db
+      .select({ githubUsername: users.githubUsername })
+      .from(users)
+      .where(eq(users.id, session.user.id))
+      .limit(1);
+    const ownerGithubUsername = ownerUsers[0]?.githubUsername || session.user.username || "github-user";
+
+    // Auto-create a public GitHub repository if requested and session has accessToken
+    let finalGithubRepoUrl = githubRepoUrl || "";
+    if (!finalGithubRepoUrl && autoCreateRepo && session.accessToken) {
+      try {
+        const repoResponse = await fetch("https://api.github.com/user/repos", {
+          method: "POST",
+          headers: {
+            "Authorization": `token ${session.accessToken}`,
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "DevConnect",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: slug,
+            description: description || `Repository for ${title}`,
+            private: false,
+            auto_init: true,
+          }),
+        });
+
+        if (repoResponse.ok) {
+          const repoData = await repoResponse.json();
+          finalGithubRepoUrl = repoData.html_url;
+        } else {
+          const errText = await repoResponse.text();
+          console.error("GitHub repository creation failed. Response:", errText);
+          finalGithubRepoUrl = "";
+        }
+      } catch (err) {
+        console.error("Error connecting to GitHub API:", err);
+        finalGithubRepoUrl = "";
+      }
+    }
+
+    const isGithubConnected = !!finalGithubRepoUrl && finalGithubRepoUrl.trim() !== "";
+
     // Create the project inside a transaction
     const newProject = await db.transaction(async (tx) => {
       const inserted = await tx
@@ -192,7 +237,8 @@ export async function POST(req: NextRequest) {
           endDate: new Date(endDate),
           ownerId: session.user.id,
           aiSummary,
-          githubRepoUrl: githubRepoUrl || "",
+          githubRepoUrl: finalGithubRepoUrl,
+          isGithubConnected,
         })
         .returning();
 

@@ -33,7 +33,7 @@ export function Header() {
           setUnreadCount(unread);
         }
       } catch (err) {
-        console.error("Failed to fetch notification count:", err);
+        console.warn("Failed to fetch notification count:", err);
       }
     };
     fetchUnreadCount();
@@ -61,11 +61,11 @@ export function Header() {
             className="flex items-center gap-2.5 group"
             id="logo-link"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center transition-transform group-hover:scale-110">
-              <Code2 className="w-4.5 h-4.5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center transition-transform group-hover:scale-105">
+              <Code2 className="w-4.5 h-4.5 text-black" />
             </div>
-            <span className="text-lg font-bold tracking-tight">
-              Dev<span className="gradient-text">Connect</span>
+            <span className="text-lg font-bold tracking-tight text-white">
+              Dev<span className="text-zinc-400">Connect</span>
             </span>
           </Link>
 
@@ -111,12 +111,12 @@ export function Header() {
                     <img
                       src={session.user?.image || ""}
                       alt={session.user?.name || "User"}
-                      className="w-8 h-8 rounded-full ring-2 ring-indigo-500/30 hover:ring-indigo-500/60 transition-all cursor-pointer"
+                      className="w-8 h-8 rounded-full ring-2 ring-zinc-800 hover:ring-zinc-700 transition-all cursor-pointer"
                     />
                   </Link>
                   <button
                     onClick={() => signOut()}
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
                     id="sign-out-btn"
                   >
                     <LogOut className="w-4 h-4" />
@@ -127,7 +127,7 @@ export function Header() {
             ) : (
               <button
                 onClick={() => signIn("github")}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30"
+                className="btn-primary flex items-center gap-2 px-4 py-2 transition-all"
                 id="sign-in-btn"
               >
                 <Github className="w-4 h-4" />

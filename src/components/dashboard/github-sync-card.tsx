@@ -87,17 +87,17 @@ export default function GithubSyncCard() {
   }
 
   return (
-    <div className="glass rounded-2xl p-6 space-y-6">
+    <div className="glass rounded-2xl p-6 space-y-6 border border-zinc-800 bg-zinc-950/40">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold flex items-center gap-2 text-white">
-          <Github className="h-5 w-5 text-indigo-400" />
-          GitHub Profile Integration
+        <h2 className="text-sm font-bold flex items-center gap-2 text-white uppercase tracking-wider">
+          <Github className="h-4.5 w-4.5 text-white" />
+          GitHub Portfolios
         </h2>
         <button
           onClick={handleSync}
           disabled={syncing}
-          className="flex items-center gap-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-400 hover:text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
+          className="btn-secondary rounded-xl px-4 py-2 text-xs font-semibold"
         >
           {syncing ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -116,20 +116,20 @@ export default function GithubSyncCard() {
 
       {/* Skills Section */}
       <div className="space-y-3">
-        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-          <Award className="h-4 w-4 text-violet-400" />
-          Detected Skills
+        <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5">
+          <Award className="h-3.5 w-3.5 text-zinc-400" />
+          Detected Languages & Skills
         </h3>
         {skills.length === 0 ? (
-          <p className="text-xs text-gray-500 italic">
-            No skills detected. Click &quot;Sync Repos&quot; to extract skills from your GitHub languages.
+          <p className="text-xs text-zinc-500 italic">
+            No skills detected. Click &quot;Sync Repos&quot; to extract skills.
           </p>
         ) : (
           <div className="flex flex-wrap gap-1.5">
             {skills.map((skill) => (
               <span
                 key={skill}
-                className="bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs px-2.5 py-1 rounded-lg font-semibold"
+                className="tag text-[10px]"
               >
                 {skill}
               </span>
@@ -139,13 +139,13 @@ export default function GithubSyncCard() {
       </div>
 
       {/* Synced Repositories List */}
-      <div className="space-y-3.5 border-t border-white/5 pt-5">
-        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+      <div className="space-y-3.5 border-t border-zinc-900 pt-5">
+        <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
           Synced Repositories ({repos.length})
         </h3>
 
         {repos.length === 0 ? (
-          <div className="text-center py-6 text-xs text-gray-500 bg-white/[0.01] rounded-xl border border-white/5">
+          <div className="text-center py-6 text-xs text-zinc-500 bg-zinc-950/20 rounded-xl border border-zinc-900">
             No repositories synced yet.
           </div>
         ) : (
@@ -153,31 +153,31 @@ export default function GithubSyncCard() {
             {repos.slice(0, 5).map((repo) => (
               <div
                 key={repo.id}
-                className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all flex flex-col gap-2"
+                className="p-3.5 rounded-xl bg-zinc-950/50 border border-zinc-900 hover:border-zinc-800 transition-all flex flex-col gap-2"
               >
                 <div className="flex items-center justify-between">
                   <a
                     href={repo.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-bold text-sm text-gray-200 hover:text-indigo-400 transition-colors truncate"
+                    className="font-semibold text-xs text-zinc-200 hover:text-white transition-colors truncate"
                   >
                     {repo.name}
                   </a>
                   {repo.language && (
-                    <span className="text-[10px] font-medium bg-white/5 text-gray-400 px-2 py-0.5 rounded-md">
+                    <span className="text-[9px] font-medium bg-zinc-900 text-zinc-400 px-2 py-0.5 rounded-md border border-zinc-850">
                       {repo.language}
                     </span>
                   )}
                 </div>
 
                 {repo.description && (
-                  <p className="text-xs text-gray-400 line-clamp-1">
+                  <p className="text-[11px] text-zinc-400 line-clamp-1 leading-relaxed">
                     {repo.description}
                   </p>
                 )}
 
-                <div className="flex items-center gap-3 text-[10px] text-gray-500 pt-0.5">
+                <div className="flex items-center gap-3 text-[10px] text-zinc-500 pt-0.5">
                   <span className="flex items-center gap-0.5">
                     <Star className="h-3 w-3 text-amber-500/70" />
                     {repo.stargazersCount}
@@ -190,7 +190,7 @@ export default function GithubSyncCard() {
               </div>
             ))}
             {repos.length > 5 && (
-              <p className="text-center text-[10px] text-gray-500 pt-1">
+              <p className="text-center text-[9px] text-zinc-500 pt-1">
                 Showing top 5 repositories sorted by stars
               </p>
             )}

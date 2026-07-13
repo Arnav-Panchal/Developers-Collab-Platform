@@ -21,15 +21,23 @@ export default function CreateProjectForm() {
     startDate: "",
     endDate: "",
     githubRepoUrl: "",
+    autoCreateRepo: true,
   });
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    const isCheckbox = type === "checkbox";
+    const checked = (e.target as HTMLInputElement).checked;
+
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "teamSize" ? parseInt(value) || 0 : value,
+      [name]: isCheckbox
+        ? checked
+        : name === "teamSize"
+        ? parseInt(value) || 0
+        : value,
     }));
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
@@ -67,6 +75,7 @@ export default function CreateProjectForm() {
       startDate: formData.startDate,
       endDate: formData.endDate,
       githubRepoUrl: formData.githubRepoUrl || undefined,
+      autoCreateRepo: formData.autoCreateRepo,
     };
 
     // Zod validation on client
@@ -117,15 +126,15 @@ export default function CreateProjectForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="glass rounded-2xl p-8 space-y-6">
+    <form onSubmit={handleSubmit} className="glass rounded-2xl p-8 space-y-6 border border-zinc-800 bg-zinc-950/40">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-sm">
+        <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-xs">
           {error}
         </div>
       )}
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-300">
+        <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
           Project Title <span className="text-red-400">*</span>
         </label>
         <input
@@ -135,15 +144,15 @@ export default function CreateProjectForm() {
           value={formData.title}
           onChange={handleChange}
           placeholder="e.g. Realtime Collaborative Code Sandbox"
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
+          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
         />
         {fieldErrors.title && (
-          <span className="text-red-400 text-xs">{fieldErrors.title}</span>
+          <span className="text-red-400 text-[10px] block mt-1">{fieldErrors.title}</span>
         )}
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-300">
+        <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
           Description <span className="text-red-400">*</span>
         </label>
         <textarea
@@ -153,16 +162,16 @@ export default function CreateProjectForm() {
           value={formData.description}
           onChange={handleChange}
           placeholder="What is this project about? Give context, goals, and details. (Min 20 characters)"
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors resize-none leading-relaxed"
         />
         {fieldErrors.description && (
-          <span className="text-red-400 text-xs">{fieldErrors.description}</span>
+          <span className="text-red-400 text-[10px] block mt-1">{fieldErrors.description}</span>
         )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-300">
+          <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
             Technologies Used <span className="text-red-400">*</span>
           </label>
           <input
@@ -172,16 +181,16 @@ export default function CreateProjectForm() {
             value={formData.technologiesRaw}
             onChange={handleChange}
             placeholder="React, Next.js, Drizzle, PostgreSQL"
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
           />
-          <span className="text-gray-500 text-xs">Separate items with commas</span>
+          <span className="text-zinc-500 text-[10px] block mt-1">Separate items with commas</span>
           {fieldErrors.technologies && (
-            <span className="text-red-400 block text-xs">{fieldErrors.technologies}</span>
+            <span className="text-red-400 block text-[10px] mt-1">{fieldErrors.technologies}</span>
           )}
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-300">
+          <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
             Required Skills <span className="text-red-400">*</span>
           </label>
           <input
@@ -191,18 +200,18 @@ export default function CreateProjectForm() {
             value={formData.requiredSkillsRaw}
             onChange={handleChange}
             placeholder="Frontend, State Management, Database Admin"
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
           />
-          <span className="text-gray-500 text-xs">Separate items with commas</span>
+          <span className="text-zinc-500 text-[10px] block mt-1">Separate items with commas</span>
           {fieldErrors.requiredSkills && (
-            <span className="text-red-400 block text-xs">{fieldErrors.requiredSkills}</span>
+            <span className="text-red-400 block text-[10px] mt-1">{fieldErrors.requiredSkills}</span>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-300">
+          <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
             Target Team Size <span className="text-red-400">*</span>
           </label>
           <input
@@ -213,15 +222,15 @@ export default function CreateProjectForm() {
             max={50}
             value={formData.teamSize}
             onChange={handleChange}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-zinc-700 transition-colors"
           />
           {fieldErrors.teamSize && (
-            <span className="text-red-400 text-xs">{fieldErrors.teamSize}</span>
+            <span className="text-red-400 text-[10px] block mt-1">{fieldErrors.teamSize}</span>
           )}
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-300">
+          <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
             Start Date <span className="text-red-400">*</span>
           </label>
           <input
@@ -230,15 +239,15 @@ export default function CreateProjectForm() {
             required
             value={formData.startDate}
             onChange={handleChange}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-zinc-700 transition-colors"
           />
           {fieldErrors.startDate && (
-            <span className="text-red-400 text-xs">{fieldErrors.startDate}</span>
+            <span className="text-red-400 text-[10px] block mt-1">{fieldErrors.startDate}</span>
           )}
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-300">
+          <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
             End Date <span className="text-red-400">*</span>
           </label>
           <input
@@ -247,16 +256,16 @@ export default function CreateProjectForm() {
             required
             value={formData.endDate}
             onChange={handleChange}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-zinc-700 transition-colors"
           />
           {fieldErrors.endDate && (
-            <span className="text-red-400 text-xs">{fieldErrors.endDate}</span>
+            <span className="text-red-400 text-[10px] block mt-1">{fieldErrors.endDate}</span>
           )}
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-300">
+        <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
           Responsibilities / Scope of Work <span className="text-red-400">*</span>
         </label>
         <textarea
@@ -266,43 +275,65 @@ export default function CreateProjectForm() {
           value={formData.responsibilities}
           onChange={handleChange}
           placeholder="e.g. Design UI prototypes, build authentication flow, integrate backend routes. (Min 10 characters)"
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white placeholder-zinc-660 focus:outline-none focus:border-zinc-700 transition-colors resize-none leading-relaxed"
         />
         {fieldErrors.responsibilities && (
-          <span className="text-red-400 text-xs">{fieldErrors.responsibilities}</span>
+          <span className="text-red-400 text-[10px] block mt-1">{fieldErrors.responsibilities}</span>
         )}
       </div>
 
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-300">
-          GitHub Repository URL <span className="text-gray-500">(Optional)</span>
-        </label>
-        <input
-          type="url"
-          name="githubRepoUrl"
-          value={formData.githubRepoUrl}
-          onChange={handleChange}
-          placeholder="https://github.com/username/repository"
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
-        />
-        {fieldErrors.githubRepoUrl && (
-          <span className="text-red-400 text-xs">{fieldErrors.githubRepoUrl}</span>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+            GitHub Repository URL <span className="text-zinc-500">(Optional)</span>
+          </label>
+          <input
+            type="url"
+            name="githubRepoUrl"
+            value={formData.githubRepoUrl}
+            onChange={handleChange}
+            placeholder="https://github.com/username/repository"
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
+          />
+          {fieldErrors.githubRepoUrl && (
+            <span className="text-red-400 text-[10px] block mt-1">{fieldErrors.githubRepoUrl}</span>
+          )}
+        </div>
+
+        {!formData.githubRepoUrl && (
+          <label className="flex items-start gap-2.5 cursor-pointer select-none py-1">
+            <input
+              type="checkbox"
+              name="autoCreateRepo"
+              checked={formData.autoCreateRepo}
+              onChange={handleChange}
+              className="mt-0.5 h-4 w-4 rounded border-zinc-800 bg-zinc-950 text-zinc-400 focus:ring-zinc-900 focus:ring-offset-black accent-zinc-500"
+            />
+            <div>
+              <span className="text-xs font-semibold text-zinc-300">
+                Automatically create a new public GitHub repository
+              </span>
+              <p className="text-[10px] text-zinc-500 mt-0.5 font-medium leading-normal">
+                A public repository named after your project slug will be automatically created under your GitHub account.
+              </p>
+            </div>
+          </label>
         )}
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl px-6 py-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn-primary rounded-xl px-6 py-3 font-semibold flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
       >
         {loading ? (
           <>
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
             Creating project...
           </>
         ) : (
           <>
-            <Plus className="h-5 w-5" />
+            <Plus className="h-4 w-4" />
             Create Project
           </>
         )}

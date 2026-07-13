@@ -1,27 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Search, SlidersHorizontal, Users, ArrowRight, Brain } from "lucide-react";
+import { Search, SlidersHorizontal, Mail, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
-type Project = {
+type Developer = {
   id: string;
-  title: string;
-  slug: string;
-  description: string;
-  technologies: string[];
-  requiredSkills: string[];
-  teamSize: number;
-  status: string;
-  aiSummary: string;
-  createdAt: string;
-  owner: {
-    id: string;
-    username: string;
-    profilePicture: string;
-  } | null;
+  username: string;
+  profilePicture: string;
+  bio: string;
+  skills: string[];
+  location: string;
 };
+
+type InviteStatus = "none" | "pending" | "invited" | "accepted" | "rejected";
+
+type DeveloperWithInvite = Developer;
 
 type Pagination = {
   page: number;
@@ -30,39 +25,31 @@ type Pagination = {
   totalPages: number;
 };
 
-export default function DiscoverCatalog() {
-  const [projects, setProjects] = useState<Project[]>([]);
+export default function DiscoverDevelopers() {
+  const [developers, setDevelopers] = useState<DeveloperWithInvite[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Filter States
   const [search, setSearch] = useState("");
-  const [technology, setTechnology] = useState("");
   const [skill, setSkill] = useState("");
-  const [status, setStatus] = useState("open");
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
 
-  // Debounced/Triggered filters
   const [activeFilters, setActiveFilters] = useState({
     search: "",
-    technology: "",
     skill: "",
-    status: "open",
     sort: "newest",
   });
 
   const [showFilters, setShowFilters] = useState(false);
 
-  // Trigger search/filters when form is submitted
   const handleApplyFilters = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setActiveFilters({
       search,
-      technology,
       skill,
-      status,
       sort,
     });
     setPage(1);
@@ -70,53 +57,48 @@ export default function DiscoverCatalog() {
 
   const handleClearFilters = () => {
     setSearch("");
-    setTechnology("");
     setSkill("");
-    setStatus("open");
     setSort("newest");
     setActiveFilters({
       search: "",
-      technology: "",
       skill: "",
-      status: "open",
       sort: "newest",
     });
     setPage(1);
   };
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchDevelopers = async () => {
       setLoading(true);
       setError(null);
       try {
         const queryParams = new URLSearchParams({
           page: String(page),
-          limit: "9",
+          limit: "12",
           sort: activeFilters.sort,
         });
 
         if (activeFilters.search) queryParams.set("search", activeFilters.search);
-        if (activeFilters.technology) queryParams.set("technology", activeFilters.technology);
         if (activeFilters.skill) queryParams.set("skill", activeFilters.skill);
-        if (activeFilters.status) queryParams.set("status", activeFilters.status);
 
-        const res = await fetch(`/api/projects?${queryParams.toString()}`);
+        const res = await fetch(`/api/developers?${queryParams.toString()}`);
         if (!res.ok) {
-          throw new Error("Failed to load projects");
+          throw new Error("Failed to load developers");
         }
         const data = await res.json();
-        setProjects(data.projects || []);
+        setDevelopers(data.developers || []);
         setPagination(data.pagination || null);
       } catch (err) {
         console.error(err);
-        setError(err instanceof Error ? err.message : "An error occurred while fetching projects.");
+        setError(err instanceof Error ? err.message : "An error occurred while fetching developers.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProjects();
+    fetchDevelopers();
   }, [page, activeFilters]);
+
 
   return (
     <div className="space-y-8">
@@ -127,7 +109,7 @@ export default function DiscoverCatalog() {
             <Search className="absolute left-4 top-3.5 h-4 w-4 text-zinc-500" />
             <input
               type="text"
-              placeholder="Search projects by title, description..."
+              placeholder="Search developers by name, location..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-11 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700 transition-colors text-sm"
@@ -155,7 +137,7 @@ export default function DiscoverCatalog() {
           </div>
         </div>
 
-        {/* Advanced Filters Expandable Panel */}
+        {/* Advanced Filters */}
         <AnimatePresence>
           {showFilters && (
             <motion.div
@@ -164,46 +146,18 @@ export default function DiscoverCatalog() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="glass rounded-2xl p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2 border border-zinc-800 bg-black/90">
+              <div className="glass rounded-2xl p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 border border-zinc-800 bg-black/90">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                    Technology
+                    Skill
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Next.js, Go"
-                    value={technology}
-                    onChange={(e) => setTechnology(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                    Required Skill
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Frontend, DB Admin"
+                    placeholder="e.g. React, Python"
                     value={skill}
                     onChange={(e) => setSkill(e.target.value)}
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
                   />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                    Status
-                  </label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-zinc-700"
-                  >
-                    <option value="open" className="bg-black text-white">Open</option>
-                    <option value="in-progress" className="bg-black text-white">In Progress</option>
-                    <option value="completed" className="bg-black text-white">Completed</option>
-                  </select>
                 </div>
 
                 <div className="space-y-1.5">
@@ -215,12 +169,12 @@ export default function DiscoverCatalog() {
                     onChange={(e) => setSort(e.target.value)}
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-zinc-700"
                   >
-                    <option value="newest" className="bg-black text-white">Newest First</option>
-                    <option value="oldest" className="bg-black text-white">Oldest First</option>
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
                   </select>
                 </div>
 
-                <div className="sm:col-span-2 lg:col-span-4 flex justify-end gap-2.5 mt-2">
+                <div className="sm:col-span-2 lg:col-span-3 flex justify-end gap-2.5 mt-2">
                   <button
                     type="button"
                     onClick={handleClearFilters}
@@ -249,19 +203,16 @@ export default function DiscoverCatalog() {
         </div>
       )}
 
-      {/* Grid of Projects */}
+      {/* Grid of Developers */}
       {loading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="glass rounded-2xl p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="skeleton h-10 w-10 rounded-full" />
-                <div className="space-y-1.5 flex-1">
-                  <div className="skeleton h-3 w-1/3" />
-                  <div className="skeleton h-4 w-2/3" />
-                </div>
+              <div className="skeleton h-12 w-12 rounded-full" />
+              <div className="space-y-1.5">
+                <div className="skeleton h-3 w-1/3" />
+                <div className="skeleton h-4 w-2/3" />
               </div>
-              <div className="skeleton h-5 w-full mt-2" />
               <div className="skeleton h-16 w-full" />
               <div className="flex gap-2">
                 <div className="skeleton h-6 w-16 rounded-full" />
@@ -270,9 +221,9 @@ export default function DiscoverCatalog() {
             </div>
           ))}
         </div>
-      ) : projects.length === 0 ? (
+      ) : developers.length === 0 ? (
         <div className="glass rounded-2xl p-12 text-center space-y-4">
-          <p className="text-gray-400 text-lg">No projects match your search criteria.</p>
+          <p className="text-gray-400 text-lg">No developers match your search criteria.</p>
           <button
             onClick={handleClearFilters}
             className="text-indigo-400 hover:text-indigo-300 font-medium underline"
@@ -282,85 +233,61 @@ export default function DiscoverCatalog() {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
+          {developers.map((dev) => (
             <motion.div
-              key={project.id}
+              key={dev.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="glass hover-card rounded-2xl p-6 flex flex-col justify-between border border-zinc-800 bg-zinc-950/40"
+              className="glass hover-card rounded-2xl p-6 flex flex-col justify-between border border-zinc-800 bg-zinc-950/40 group"
             >
               <div className="space-y-4">
-                {/* Header: User Profile */}
-                <div className="flex items-center gap-2.5">
+                {/* Avatar & Name */}
+                <div className="flex flex-col items-center text-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={project.owner?.profilePicture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"}
-                    alt={project.owner?.username || "user"}
-                    className="h-8 w-8 rounded-full object-cover border border-zinc-850"
+                    src={dev.profilePicture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"}
+                    alt={dev.username}
+                    className="h-12 w-12 rounded-full object-cover border border-zinc-800 mb-2"
                   />
-                  <div>
-                    <p className="text-[10px] text-zinc-500">Posted by</p>
-                    <p className="text-xs font-semibold text-zinc-400">
-                      @{project.owner?.username || "anonymous"}
-                    </p>
-                  </div>
+                  <p className="text-sm font-bold text-white">@{dev.username}</p>
+                  {dev.location && (
+                    <p className="text-xs text-zinc-500 mt-1">{dev.location}</p>
+                  )}
                 </div>
 
-                {/* Title & Description */}
-                <div>
-                  <h3 className="text-lg font-bold text-white line-clamp-1 tracking-tight">
-                    {project.title}
-                  </h3>
-                  <p className="text-zinc-400 text-xs mt-2 line-clamp-3 leading-relaxed">
-                    {project.description}
+                {/* Bio */}
+                {dev.bio && (
+                  <p className="text-xs text-zinc-400 line-clamp-2 text-center leading-relaxed">
+                    {dev.bio}
                   </p>
-                </div>
-
-                {/* AI Summary Block (if exists) */}
-                {project.aiSummary && (
-                  <div className="bg-indigo-950/10 border border-indigo-900/20 rounded-xl p-3 flex items-start gap-2.5">
-                    <Brain className="h-3.5 w-3.5 text-indigo-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-wider">
-                        AI Summary
-                      </p>
-                      <p className="text-xs text-zinc-300 line-clamp-2 mt-0.5 leading-relaxed">
-                        {project.aiSummary}
-                      </p>
-                    </div>
-                  </div>
                 )}
 
-                {/* Technologies */}
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {project.technologies.slice(0, 3).map((tech) => (
+                {/* Skills */}
+                <div className="flex flex-wrap gap-1.5 justify-center pt-2">
+                  {dev.skills.slice(0, 4).map((skill) => (
                     <span
-                      key={tech}
+                      key={skill}
                       className="tag text-[10px]"
                     >
-                      {tech}
+                      {skill}
                     </span>
                   ))}
-                  {project.technologies.length > 3 && (
+                  {dev.skills.length > 4 && (
                     <span className="text-zinc-500 text-[10px] self-center px-1">
-                      +{project.technologies.length - 3}
+                      +{dev.skills.length - 4}
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Card Footer */}
-              <div className="flex items-center justify-between border-t border-zinc-900 pt-4 mt-6">
-                <div className="flex items-center gap-1.5 text-zinc-500 text-xs">
-                  <Users className="h-3.5 w-3.5" />
-                  <span>Team Size: {project.teamSize}</span>
-                </div>
+              {/* View Profile Button */}
+              <div className="pt-4 mt-4 border-t border-zinc-900">
                 <Link
-                  href={`/projects/${project.slug}`}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-zinc-300 hover:text-white transition-colors group"
+                  href={`/developers/${dev.username}`}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-colors"
                 >
-                  View details
-                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className="h-3.5 w-3.5" />
+                  View Profile
                 </Link>
               </div>
             </motion.div>
