@@ -3,14 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "probavera-project-watch run -- npm run dev:app",
     "build": "next build",
-    "start": "next start",
+    "start": "probavera-project-watch run -- npm run start:app",
     "lint": "eslint",
-    "db:migrate": "npx tsx src/lib/db/migrate.ts"
+    "db:migrate": "npx tsx src/lib/db/migrate.ts",
+    "dev:app": "next dev --turbopack",
+    "start:app": "next start"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",
+    "anchor-sdk-724": "^0.3.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dotenv": "^17.4.2",
