@@ -55,23 +55,35 @@ const features = [
   },
 ];
 
+// Returns null instead of throwing: this is the public landing page, so a
+// database outage should blank out the stats bar rather than 500 the whole
+// page for every visitor.
+async function countRows(
+  table: typeof users | typeof projects | typeof projectUsers,
+): Promise<number | null> {
+  try {
+    const rows = await db.select({ count: sql<number>`count(*)` }).from(table);
+    return Number(rows[0]?.count ?? 0);
+  } catch (error) {
+    console.error("Landing page stats query failed:", error);
+    return null;
+  }
+}
+
 export default async function HomePage() {
   const session = await auth();
 
   // Fetch dynamic landing page stats from the database
-  const userCountRes = await db.select({ count: sql<number>`count(*)` }).from(users);
-  const totalUsers = userCountRes[0]?.count || 0;
-
-  const projectCountRes = await db.select({ count: sql<number>`count(*)` }).from(projects);
-  const totalProjects = projectCountRes[0]?.count || 0;
-
-  const memberCountRes = await db.select({ count: sql<number>`count(*)` }).from(projectUsers);
-  const totalMembers = memberCountRes[0]?.count || 0;
+  const [totalUsers, totalProjects, totalMembers] = await Promise.all([
+    countRows(users),
+    countRows(projects),
+    countRows(projectUsers),
+  ]);
 
   const stats = [
-    { value: totalUsers.toString(), label: "Registered Developers" },
-    { value: totalProjects.toString(), label: "Active Projects" },
-    { value: totalMembers.toString(), label: "Successful Matches" },
+    { value: totalUsers?.toString() ?? "—", label: "Registered Developers" },
+    { value: totalProjects?.toString() ?? "—", label: "Active Projects" },
+    { value: totalMembers?.toString() ?? "—", label: "Successful Matches" },
     { value: "<1s", label: "AI Response Time" },
   ];
 
