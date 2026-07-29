@@ -8,6 +8,8 @@
     "start": "probavera-project-watch run -- npm run start:app",
     "lint": "eslint",
     "db:migrate": "npx tsx src/lib/db/migrate.ts",
+    "db:make-admin": "npx tsx src/lib/db/make-admin.ts",
+    "db:seed-colleges": "npx tsx src/lib/db/seed-colleges.ts",
     "dev:app": "next dev --turbopack",
     "start:app": "next start"
   },

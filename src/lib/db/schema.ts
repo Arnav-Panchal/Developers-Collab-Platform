@@ -9,8 +9,9 @@ import {
   uniqueIndex,
   index,
   primaryKey,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // -------- Enums represented as strings --------
 
@@ -27,6 +28,12 @@ export const notificationTypeEnum = [
   "new_message",
   "project_update",
 ] as const;
+
+// A college/company is a root community (no parent); clubs and chapters hang
+// off one. Nesting is capped at two levels — see `parentId` below.
+export const communityTypeEnum = ["college", "company", "club", "interest"] as const;
+export const communityRoleEnum = ["owner", "admin", "member"] as const;
+export const communityVisibilityEnum = ["public", "private"] as const;
 
 // -------- Tables --------
 
@@ -226,6 +233,101 @@ export const githubRepos = pgTable(
   ]
 );
 
+/**
+ * Communities are self-referencing: a root row (parentId null) is a college or
+ * company, a child row is a club inside one. That makes "GDSC" ambiguous only
+ * within a single parent, so two colleges can both have a GDSC without either
+ * getting a `-2` suffix.
+ *
+ * Three separate guards keep names sane:
+ *  - `slug` is unique within the parent (URL identity)
+ *  - `nameKey` is the display name normalized down to letters and digits, also
+ *    unique within the parent, so "G.D.S.C." can't slip past "GDSC"
+ *  - `path` is the materialized "parent-slug/slug" used for URL lookups
+ */
+export const communities = pgTable(
+  "communities",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: varchar("name", { length: 100 }).notNull(),
+    slug: varchar("slug", { length: 60 }).notNull(),
+    nameKey: varchar("name_key", { length: 100 }).notNull(),
+    path: text("path").notNull().unique(),
+    type: varchar("type", { length: 20 }).default("club").notNull(), // college, company, club, interest
+    parentId: uuid("parent_id").references((): AnyPgColumn => communities.id, {
+      onDelete: "cascade",
+    }),
+    description: text("description").default("").notNull(),
+    // Free-form rules/onboarding text the community fills in and edits later.
+    instructions: text("instructions").default("").notNull(),
+    instructionsUpdatedAt: timestamp("instructions_updated_at"),
+    instructionsUpdatedBy: uuid("instructions_updated_by").references(
+      () => users.id,
+      { onDelete: "set null" }
+    ),
+    visibility: varchar("visibility", { length: 20 })
+      .default("public")
+      .notNull(), // public, private
+    logoUrl: text("logo_url").default("").notNull(),
+    website: text("website").default("").notNull(),
+    city: text("city").default("").notNull(),
+    // Members signing up with one of these email domains are auto-verified.
+    emailDomains: text("email_domains").array().default([]).notNull(),
+    isVerified: boolean("is_verified").default(false).notNull(),
+    ownerId: uuid("owner_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    memberCount: integer("member_count").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    // Postgres treats NULLs as distinct in a unique index, so `(parent_id, slug)`
+    // alone would let unlimited duplicate root communities through. Split the
+    // constraint into a root half and a child half.
+    uniqueIndex("communities_root_slug_idx")
+      .on(table.slug)
+      .where(sql`parent_id IS NULL`),
+    uniqueIndex("communities_child_slug_idx")
+      .on(table.parentId, table.slug)
+      .where(sql`parent_id IS NOT NULL`),
+    uniqueIndex("communities_root_name_key_idx")
+      .on(table.nameKey)
+      .where(sql`parent_id IS NULL`),
+    uniqueIndex("communities_child_name_key_idx")
+      .on(table.parentId, table.nameKey)
+      .where(sql`parent_id IS NOT NULL`),
+    index("communities_parent_idx").on(table.parentId),
+    index("communities_type_idx").on(table.type),
+    index("communities_owner_idx").on(table.ownerId),
+  ]
+);
+
+export const communityMembers = pgTable(
+  "community_members",
+  {
+    communityId: uuid("community_id")
+      .references(() => communities.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: uuid("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    role: varchar("role", { length: 20 }).default("member").notNull(), // owner, admin, member
+    title: varchar("title", { length: 60 }).default("").notNull(), // e.g. "President", "Batch of 2027"
+    // True when the user's email matched one of the community's emailDomains.
+    isVerified: boolean("is_verified").default(false).notNull(),
+    joinedAt: timestamp("joined_at").defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.communityId, table.userId] }),
+    index("community_members_user_idx").on(table.userId),
+    index("community_members_community_role_idx").on(
+      table.communityId,
+      table.role
+    ),
+  ]
+);
+
 // -------- Relations --------
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -236,6 +338,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   sentNotifications: many(notifications, { relationName: "sentNotifications" }),
   receivedNotifications: many(notifications, { relationName: "receivedNotifications" }),
   githubRepos: many(githubRepos),
+  ownedCommunities: many(communities, { relationName: "ownedCommunities" }),
+  communityMemberships: many(communityMembers),
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -306,3 +410,32 @@ export const githubReposRelations = relations(githubRepos, ({ one }) => ({
     references: [users.id],
   }),
 }));
+
+export const communitiesRelations = relations(communities, ({ one, many }) => ({
+  parent: one(communities, {
+    fields: [communities.parentId],
+    references: [communities.id],
+    relationName: "communityHierarchy",
+  }),
+  children: many(communities, { relationName: "communityHierarchy" }),
+  owner: one(users, {
+    fields: [communities.ownerId],
+    references: [users.id],
+    relationName: "ownedCommunities",
+  }),
+  members: many(communityMembers),
+}));
+
+export const communityMembersRelations = relations(
+  communityMembers,
+  ({ one }) => ({
+    community: one(communities, {
+      fields: [communityMembers.communityId],
+      references: [communities.id],
+    }),
+    user: one(users, {
+      fields: [communityMembers.userId],
+      references: [users.id],
+    }),
+  })
+);

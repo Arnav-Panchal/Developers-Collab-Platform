@@ -13,6 +13,7 @@ import {
   Compass,
   Plus,
   Github,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNotificationStore } from "@/lib/stores";
@@ -43,6 +44,7 @@ export function Header() {
 
   const navLinks = [
     { href: "/discover", label: "Discover", icon: Compass },
+    { href: "/communities", label: "Communities", icon: Users },
     ...(session
       ? [
           { href: "/projects/create", label: "Create", icon: Plus },

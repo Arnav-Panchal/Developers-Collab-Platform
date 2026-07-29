@@ -55,3 +55,50 @@ export function createSlug(str: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 }
+
+/** Leading words that carry no identity, so "The GDSC" collides with "GDSC". */
+const NAME_KEY_STOP_WORDS = ["the", "a", "an"];
+
+/**
+ * Reduce a community name to a comparison key: lowercase, accent-folded, with
+ * punctuation and spacing stripped. "GDSC", "G.D.S.C." and "The  gdsc " all
+ * collapse to `gdsc`, so a unique index on this column catches the near-misses
+ * a slug comparison would wave through.
+ */
+export function normalizeNameKey(str: string): string {
+  const stripped = str
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  // Only drop a stop word if something else survives — a community literally
+  // called "The" should still key to something.
+  const meaningful = stripped.filter((w) => !NAME_KEY_STOP_WORDS.includes(w));
+  const words = meaningful.length > 0 ? meaningful : stripped;
+
+  return words.join("");
+}
+
+/**
+ * Materialized URL path for a community: "vit-vellore" at the root,
+ * "vit-vellore/gdsc" for a child.
+ */
+export function buildCommunityPath(
+  slug: string,
+  parentPath?: string | null
+): string {
+  return parentPath ? `${parentPath}/${slug}` : slug;
+}
+
+/**
+ * Extract the lowercased domain from an email address, or "" if malformed.
+ */
+export function emailDomain(email: string): string {
+  const at = email.lastIndexOf("@");
+  if (at === -1 || at === email.length - 1) return "";
+  return email.slice(at + 1).toLowerCase().trim();
+}

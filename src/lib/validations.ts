@@ -95,6 +95,82 @@ export const sendMessageSchema = z.object({
 
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 
+// -------- Community Schemas --------
+
+const communityBaseSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name must be at most 100 characters"),
+  description: z
+    .string()
+    .max(2000, "Description must be at most 2000 characters")
+    .default(""),
+  type: z.enum(["college", "company", "club", "interest"]),
+  visibility: z.enum(["public", "private"]).default("public"),
+  city: z.string().max(100).default(""),
+  website: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  logoUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  emailDomains: z
+    .array(
+      z
+        .string()
+        .trim()
+        .toLowerCase()
+        // Accept a bare domain only — "vit.ac.in", never "@vit.ac.in" or a URL.
+        .regex(
+          /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/,
+          "Enter a bare domain like vit.ac.in"
+        )
+    )
+    .max(10, "Maximum 10 email domains")
+    .default([]),
+});
+
+export const createCommunitySchema = communityBaseSchema.extend({
+  parentId: z.string().uuid("Invalid parent community").nullish(),
+  instructions: z
+    .string()
+    .max(20000, "Instructions must be at most 20000 characters")
+    .default(""),
+});
+
+export type CreateCommunityInput = z.infer<typeof createCommunitySchema>;
+
+// `parentId` is intentionally absent — reparenting would invalidate every
+// descendant path and member's scope, so it is not an edit.
+export const updateCommunitySchema = communityBaseSchema.partial();
+
+export type UpdateCommunityInput = z.infer<typeof updateCommunitySchema>;
+
+export const updateInstructionsSchema = z.object({
+  instructions: z
+    .string()
+    .max(20000, "Instructions must be at most 20000 characters"),
+});
+
+export type UpdateInstructionsInput = z.infer<typeof updateInstructionsSchema>;
+
+export const updateMemberSchema = z.object({
+  role: z.enum(["admin", "member"]).optional(),
+  title: z.string().max(60, "Title must be at most 60 characters").optional(),
+});
+
+export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
+
+export const communityFilterSchema = z.object({
+  search: z.string().optional(),
+  type: z.enum(["college", "company", "club", "interest"]).optional(),
+  parentId: z.string().uuid().optional(),
+  // "root" restricts results to colleges/companies, useful for parent pickers.
+  scope: z.enum(["all", "root"]).default("all"),
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(50).default(12),
+  sort: z.enum(["members", "newest", "name"]).default("members"),
+});
+
+export type CommunityFilterInput = z.infer<typeof communityFilterSchema>;
+
 // -------- Search & Filter Schemas --------
 
 export const projectFilterSchema = z.object({
